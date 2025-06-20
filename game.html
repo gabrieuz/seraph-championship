@@ -1008,56 +1008,156 @@
                     ctx.textAlign = 'center';
                     ctx.fillText(`BOSS - ${Math.ceil(this.hp)}/${this.maxHp}`, GAME_WIDTH / 2, barY + 35);
                     ctx.textAlign = 'left';
-                }                // Indicador do padrão atual (se não estiver na introdução)
+                }                // Efeitos visuais do padrão atual ao redor do boss
                 if (!this.isIntroPhase) {
-                    const patternNames = {
-                        'barrage': 'SARAIVADA',
-                        'lightning': 'RAIOS',
-                        'summon': 'INVOCAÇÃO'
-                    };
-
+                    const progress = this.isInCooldown ? 0 : Math.min(1, this.patternTimer / this.patternDuration);
                     const currentPatternName = this.attackPatterns[this.currentPattern];
-                    const displayName = patternNames[currentPatternName];
 
                     if (!this.isInCooldown) {
-                        // Fundo do indicador
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                        ctx.fillRect(GAME_WIDTH / 2 - 120, 90, 240, 35);
-
-                        // Nome do padrão
-                        ctx.fillStyle = '#f39c12';
-                        ctx.font = 'bold 14px Courier New';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(displayName, GAME_WIDTH / 2, 108);
-
-                        // Barra de progresso do padrão
-                        const progressBarWidth = 200;
-                        const progressBarHeight = 8;
-                        const progressBarX = GAME_WIDTH / 2 - progressBarWidth / 2;
-                        const progressBarY = 112;
-
-                        // Fundo da barra
-                        ctx.fillStyle = '#333';
-                        ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
-
-                        // Progresso
-                        const progress = Math.min(1, this.patternTimer / this.patternDuration);
-                        ctx.fillStyle = '#e67e22';
-                        ctx.fillRect(progressBarX, progressBarY, progressBarWidth * progress, progressBarHeight);
-
-                        ctx.textAlign = 'left';
+                        // Efeitos específicos para cada padrão
+                        switch (currentPatternName) {
+                            case 'barrage':
+                                this.drawBarrageEffect(progress);
+                                break;
+                            case 'lightning':
+                                this.drawLightningEffect(progress);
+                                break;
+                            case 'summon':
+                                this.drawSummonEffect(progress);
+                                break;
+                        }
                     } else {
-                        // Mostrar pausa
-                        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                        ctx.fillRect(GAME_WIDTH / 2 - 80, 90, 160, 25);
-
-                        ctx.fillStyle = '#95a5a6';
-                        ctx.font = 'bold 14px Courier New';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('PAUSA', GAME_WIDTH / 2, 108);
-                        ctx.textAlign = 'left';
+                        // Efeito de pausa - aura pulsante suave
+                        const pauseAlpha = (Math.sin(Date.now() * 0.005) + 1) * 0.3;
+                        ctx.save();
+                        ctx.globalAlpha = pauseAlpha;
+                        ctx.strokeStyle = '#95a5a6';
+                        ctx.lineWidth = 8;
+                        ctx.beginPath();
+                        ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.6, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
                     }
                 }
+            }
+
+            drawBarrageEffect(progress) {
+                // Círculos vermelhos pulsantes ao redor do boss para indicar saraivada
+                const time = Date.now() * 0.01;
+                const numCircles = 6;
+                const baseRadius = this.width * 0.4;
+
+                ctx.save();
+                for (let i = 0; i < numCircles; i++) {
+                    const angle = (i / numCircles) * Math.PI * 2 + progress * Math.PI * 2;
+                    const radius = baseRadius + Math.sin(time + i) * 15;
+                    const x = this.x + this.width / 2 + Math.cos(angle) * radius;
+                    const y = this.y + this.height / 2 + Math.sin(angle) * radius;
+
+                    const alpha = (0.4 + Math.sin(time * 2 + i) * 0.3) * progress;
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = '#ff4da6';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8 + Math.sin(time + i) * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Aura externa crescente
+                ctx.save();
+                ctx.globalAlpha = 0.2 * progress;
+                ctx.strokeStyle = '#ff4da6';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.6 * (1 + progress * 0.3), 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            drawLightningEffect(progress) {
+                // Efeitos elétricos ao redor do boss
+                const time = Date.now() * 0.015;
+                const numBolts = 8;
+
+                ctx.save();
+                for (let i = 0; i < numBolts; i++) {
+                    const angle = (i / numBolts) * Math.PI * 2 + progress * Math.PI;
+                    const distance = this.width * 0.5 + Math.sin(time + i) * 20;
+                    const x = this.x + this.width / 2 + Math.cos(angle) * distance;
+                    const y = this.y + this.height / 2 + Math.sin(angle) * distance;
+
+                    // Pequenos raios elétricos
+                    const alpha = (0.5 + Math.sin(time * 3 + i) * 0.4) * progress;
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = '#ff4500';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    // Criar padrão de raio irregular
+                    for (let j = 0; j < 3; j++) {
+                        const boltX = x + (Math.random() - 0.5) * 30;
+                        const boltY = y + (Math.random() - 0.5) * 30;
+                        ctx.lineTo(boltX, boltY);
+                    }
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Aura elétrica pulsante
+                ctx.save();
+                const pulseAlpha = (Math.sin(time * 4) + 1) * 0.15 * progress;
+                ctx.globalAlpha = pulseAlpha;
+                ctx.strokeStyle = '#ffff00';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.7, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            drawSummonEffect(progress) {
+                // Símbolos místicos rotacionando ao redor do boss
+                const time = Date.now() * 0.008;
+                const numSymbols = 4;
+
+                ctx.save();
+                ctx.font = 'bold 24px Courier New';
+                ctx.textAlign = 'center';
+
+                for (let i = 0; i < numSymbols; i++) {
+                    const angle = (i / numSymbols) * Math.PI * 2 + progress * Math.PI * 1.5;
+                    const radius = this.width * 0.6 + Math.sin(time + i) * 10;
+                    const x = this.x + this.width / 2 + Math.cos(angle) * radius;
+                    const y = this.y + this.height / 2 + Math.sin(angle) * radius;
+
+                    const alpha = (0.6 + Math.sin(time * 2 + i) * 0.3) * progress;
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = '#8e44ad';
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+
+                    // Símbolos místicos diferentes
+                    const symbols = ['◊', '※', '⚡', '◆'];
+                    const symbol = symbols[i];
+
+                    ctx.strokeText(symbol, x, y);
+                    ctx.fillText(symbol, x, y);
+                }
+                ctx.restore();
+
+                // Círculos concêntricos roxos
+                ctx.save();
+                for (let i = 0; i < 3; i++) {
+                    const radius = this.width * (0.4 + i * 0.15) * (1 + progress * 0.2);
+                    const alpha = (0.3 - i * 0.1) * progress;
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = '#9b59b6';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width / 2, this.y + this.height / 2, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.restore();
             }
 
             die() {
@@ -1075,7 +1175,7 @@
         class Projectile { /* ... unchanged ... */ constructor(x, y, vx, vy, damage, isPlayerProjectile, color = 'magenta', hitsLeft = 1, size = 5) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.damage = damage; this.radius = size; this.isPlayerProjectile = isPlayerProjectile; this.color = color; this.hitsLeft = hitsLeft; this.hasHitTargets = []; } update(dt) { this.x += this.vx; this.y += this.vy; if (this.isPlayerProjectile) { particles.push(new Particle(this.x, this.y, this.radius / 2, this.color, random(-0.3, 0.3), random(-0.3, 0.3), 150)); } if (this.x < -this.radius || this.x > GAME_WIDTH + this.radius || this.y < -this.radius || this.y > GAME_HEIGHT + this.radius) this.remove(); } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); } remove() { const index = projectiles.indexOf(this); if (index > -1) projectiles.splice(index, 1); } onHit(target) { this.hitsLeft--; this.hasHitTargets.push(target); if (this.hitsLeft <= 0) this.remove(); } }
         class Particle { /* ... unchanged ... */ constructor(x, y, size, color, vx, vy, life = 500) { this.x = x; this.y = y; this.size = size; this.color = color; this.life = life; this.initialLife = life; this.vx = vx; this.vy = vy; } update(dt) { this.life -= dt; this.x += this.vx; this.y += this.vy; } draw() { ctx.globalAlpha = Math.max(0, this.life / this.initialLife); ctx.fillStyle = this.color; ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size); ctx.globalAlpha = 1; } }
         class DamageText { /* ... unchanged ... */ constructor(x, y, text, color = 'white', size = 16) { this.x = x + random(-5, 5); this.y = y; this.text = text; this.color = color; this.size = size; this.life = 700; this.initialLife = this.life; this.vy = -0.5; this.opacity = 1; } update(dt) { this.life -= dt; this.y += this.vy; this.opacity = Math.max(0, (this.life / this.initialLife) * 1.5); } draw() { ctx.font = `bold ${this.size}px 'Courier New', Courier, monospace`; ctx.textAlign = 'center'; ctx.globalAlpha = this.opacity; ctx.fillStyle = this.color; ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.strokeText(this.text, this.x, this.y); ctx.fillText(this.text, this.x, this.y); ctx.globalAlpha = 1; ctx.textAlign = 'left'; } }
-        class Thunderbolt { /* ... unchanged ... */ constructor(targetX) { this.x = targetX; this.y = 0; this.width = 15; this.height = GAME_HEIGHT; this.damage = player.projectileDamage * 1.5; this.duration = 250; this.timer = this.duration; this.color = 'yellow'; } update(dt) { this.timer -= dt; this.height = GAME_HEIGHT; enemies.forEach(enemy => { if (this.timer > 0 && enemy.type !== 'boss' && enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) { enemy.takeDamage(this.damage * (dt / 200), false); } }); } draw() { if (this.timer > 0) { const alpha = Math.sin(((this.duration - this.timer) / this.duration) * Math.PI); ctx.globalAlpha = alpha * 0.7; ctx.fillStyle = this.color; ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height); ctx.globalAlpha = 1; } } isDone() { return this.timer <= 0; } }
+        class Thunderbolt { /* ... unchanged ... */ constructor(targetX) { this.x = targetX; this.y = 0; this.width = 15; this.height = GAME_HEIGHT; this.damage = player.projectileDamage * 1.5; this.duration = 250; this.timer = this.duration; this.color = 'yellow'; } update(dt) { this.timer -= dt; this.height = GAME_HEIGHT; enemies.forEach(enemy => { if (this.timer > 0 && enemy.type !== 'boss' && enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) { enemy.takeDamage(this.damage * (dt / 200), false); } }); } draw() { if (this.timer > 0) { const alpha = Math.sin(((this.duration - this.timer) / this.duration) * Math.PI); ctx.globalAlpha = alpha * 0.7; ctx.fillStyle = this.color; ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height); ctx.globalAlpha = 1; } } }
         class BossLightning {
             constructor(targetX) {
                 this.x = targetX;
