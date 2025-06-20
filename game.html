@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mage Survival Roguelike</title>
+    <title>Seraph's Lastest Stand</title>
     <style>
         body {
-            background-color: #111;
+            background-color: #000;
             color: #eee;
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
@@ -16,19 +16,158 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
+            padding: 20px;
+            /* Add some padding to see the frame */
+            box-sizing: border-box;
+            /* Include padding in the total width/height */
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
         }
 
         canvas {
-            background-color: #000;
+            background-color: transparent;
             display: block;
+            position: relative;
+            z-index: 2;
         }
 
         #game-container {
             position: relative;
             width: 1280px;
             height: 720px;
+            background-color: #000;
+            /* Optional: visual aid for container */
+            border: 3px solid #888;
+            box-shadow: 0 0 15px #555, 0 0 30px #333, inset 0 0 20px #222;
+            border-radius: 10px;
+            overflow: hidden;
+            /* Ensures the canvas and other elements stay within the rounded corners */
         }
 
+        #starry-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(2px 2px at 50px 200px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1.5px 1.5px at 150px 300px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1px 1px at 400px 100px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1.5px 1.5px at 600px 350px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(2.5px 2.5px at 250px 50px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(2px 2px at 350px 250px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(3px 3px at 550px 150px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(2.5px 2.5px at 700px 280px, white, rgba(255, 255, 255, 0));
+            background-repeat: repeat;
+            background-size: 800px 800px;
+            animation: twinkle 6s infinite linear;
+            display: none;
+            z-index: 1;
+        }
+
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 50;
+            /* Below UI, LevelUp, GameOver */
+        }
+
+        #start-menu-screen {
+            background-color: rgba(0, 0, 0, 0.85);
+            /* Slightly transparent to see particles */
+            display: flex;
+            /* Show by default, JS will control later if needed */
+            z-index: 250;
+            /* Highest for initial view */
+        }
+
+        #start-menu-screen h1 {
+            font-size: 4em;
+            margin-bottom: 40px;
+            animation: titleSway 3s ease-in-out infinite, titleColor 4s linear infinite;
+        }
+
+        @keyframes titleSway {
+
+            0%,
+            100% {
+                transform: rotate(-2.5deg);
+            }
+
+            50% {
+                transform: rotate(2.5deg);
+            }
+        }
+
+        @keyframes titleColor {
+
+            0%,
+            100% {
+                color: #ffff66;
+                /* Yellow */
+                text-shadow: 0 0 2px #fff, 0 0 8px #ffff66;
+            }
+
+            33% {
+                color: #ff6666;
+                /* Red */
+                text-shadow: 0 0 2px #fff, 0 0 8px #ff6666;
+            }
+
+            66% {
+                color: #6666ff;
+                /* Blue */
+                text-shadow: 0 0 2px #fff, 0 0 8px #6666ff;
+            }
+        }
+
+
+        #pause-menu-screen {
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 150;
+        }
+
+        .menu-button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            margin: 10px;
+            cursor: pointer;
+            background: linear-gradient(145deg, #2a2a2a, #1f1f1f);
+            color: #e0e0e0;
+            border: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            min-width: 220px;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-button:hover {
+            background: linear-gradient(145deg, #333333, #2a2a2a);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
 
         #ui-container {
             position: absolute;
@@ -132,30 +271,78 @@
             border-left: 5px solid #FFD700;
         }
 
-
         #game-over-screen {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 30px;
-            border-radius: 10px;
+            background-color: rgba(10, 10, 10, 0.9);
+            padding: 40px 60px;
+            border-radius: 15px;
             text-align: center;
             display: none;
+            flex-direction: column;
+            /* Changed for better alignment */
+            align-items: center;
+            justify-content: center;
             z-index: 101;
+            border: 2px solid #444;
+            box-shadow: 0 0 25px rgba(255, 100, 100, 0.3);
+            animation: fadeInGameOver 0.5s ease-out;
         }
 
-        #game-over-screen button {
-            padding: 10px 20px;
-            font-size: 1.2em;
-            margin-top: 20px;
-            cursor: pointer;
-            background-color: #555;
-            color: white;
-            border: none;
-            border-radius: 5px;
+        #game-over-screen h1 {
+            font-size: 4.5em;
+            color: #ff4d4d;
+            text-shadow: 0 0 10px #ff4d4d, 0 0 20px #ff0000;
+            margin-bottom: 10px;
         }
+
+        #game-over-screen p {
+            font-size: 1.8em;
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+
+        #game-over-screen .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            /* Adds space between buttons */
+        }
+
+        #victory-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(10, 20, 10, 0.9);
+            padding: 40px 60px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            border: 2px solid #44aa44;
+            box-shadow: 0 0 25px rgba(100, 255, 100, 0.3);
+            animation: fadeInGameOver 0.5s ease-out;
+        }
+
+        #victory-screen h1 {
+            font-size: 4.5em;
+            color: #4dff4d;
+            text-shadow: 0 0 10px #4dff4d, 0 0 20px #00ff00;
+            margin-bottom: 10px;
+        }
+
+        #victory-screen p {
+            font-size: 1.8em;
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+
 
         #wave-notification {
             position: absolute;
@@ -183,12 +370,89 @@
                 opacity: 1;
             }
         }
+
+        @keyframes fadeInGameOver {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -45%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        #leaderboard-screen {
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 200;
+        }
+
+        #leaderboard-table {
+            width: 80%;
+            max-width: 600px;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        #leaderboard-table th,
+        #leaderboard-table td {
+            border: 1px solid #555;
+            padding: 10px 15px;
+            text-align: left;
+        }
+
+        #leaderboard-table th {
+            background-color: #333;
+            font-size: 1.2em;
+        }
+
+        #leaderboard-table td {
+            font-size: 1.1em;
+        }
+
+        #leaderboard-table tr:nth-child(even) {
+            background-color: #222;
+        }
     </style>
 </head>
 
 <body>
     <div id="game-container">
+        <div id="starry-background"></div>
         <canvas id="gameCanvas"></canvas>
+
+        <div id="start-menu-screen" class="screen-overlay">
+            <h1>Seraph's Lastest Stand</h1>
+            <input type="text" id="nickname-input" placeholder="Enter your nickname" class="menu-button"
+                style="text-align: center; margin-bottom: 10px;">
+            <button id="start-game-btn" class="menu-button">Start Game</button>
+            <button id="leaderboard-btn" class="menu-button">Leaderboard</button>
+        </div>
+
+        <div id="pause-menu-screen" class="screen-overlay">
+            <h2>Paused</h2>
+            <button id="resume-game-btn" class="menu-button">Resume</button>
+            <button id="main-menu-btn-pause" class="menu-button">Main Menu</button>
+        </div>
+
+        <div id="leaderboard-screen" class="screen-overlay">
+            <h2>Leaderboard</h2>
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Nickname</th>
+                        <th>Kills</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                </tbody>
+            </table>
+            <button id="back-to-menu-btn" class="menu-button">Back</button>
+        </div>
+
         <div id="ui-container">
             <div>HP: <span id="hp-value">100</span> / <span id="max-hp-value">100</span></div>
             <div id="hp-bar-container">
@@ -202,18 +466,32 @@
             <div>Wave: <span id="wave-value">1</span></div>
             <div>Kills: <span id="kills-value">0</span></div>
         </div>
+
         <div id="level-up-screen">
             <h2>Level Up! Choose an Upgrade:</h2>
             <div id="card-options"></div>
         </div>
+
         <div id="game-over-screen">
             <h1>Game Over</h1>
             <p>Kills: <span id="final-kills">0</span></p>
-            <button id="restart-btn">Restart</button>
+            <div class="button-container">
+                <button id="restart-btn" class="menu-button">Restart</button>
+                <button id="main-menu-btn-gameover" class="menu-button">Main Menu</button>
+            </div>
         </div>
-        <div id="wave-notification">
-            Wave 1
+
+        <div id="victory-screen">
+            <h1>Victory!</h1>
+            <p>You have saved the cosmos!</p>
+            <p>Final Kills: <span id="victory-final-kills">0</span></p>
+            <div class="button-container">
+                <button id="restart-btn-victory" class="menu-button">Play Again</button>
+                <button id="main-menu-btn-victory" class="menu-button">Main Menu</button>
+            </div>
         </div>
+
+        <div id="wave-notification">Wave 1</div>
     </div>
     <script>
         // --- CANVAS SETUP ---
@@ -225,70 +503,77 @@
         canvas.width = GAME_WIDTH;
         canvas.height = GAME_HEIGHT;
 
-        // --- SPRITE DIMENSIONS (Original from files) ---
+        // --- SPRITE DIMENSIONS & IN-GAME SIZES ---
         const PLAYER_SPRITE_FILE_WIDTH = 95;
         const PLAYER_SPRITE_FILE_HEIGHT = 141;
         const ENEMY_SPRITE_FILE_WIDTH = 105;
         const ENEMY_SPRITE_FILE_HEIGHT = 143;
+        const BOSS_SPRITE_FILE_WIDTH = 150;
+        const BOSS_SPRITE_FILE_HEIGHT = 150;
 
-        // --- IN-GAME SIZES ---
-        const PLAYER_INGAME_WIDTH = PLAYER_SPRITE_FILE_WIDTH * 0.5;
-        const PLAYER_INGAME_HEIGHT = PLAYER_SPRITE_FILE_HEIGHT * 0.5;
-        const ENEMY_INGAME_WIDTH = ENEMY_SPRITE_FILE_WIDTH * 0.5;
-        const ENEMY_INGAME_HEIGHT = ENEMY_SPRITE_FILE_HEIGHT * 0.5;
-        const CHAMPION_INGAME_WIDTH = ENEMY_INGAME_WIDTH * 1.5;
-        const CHAMPION_INGAME_HEIGHT = ENEMY_INGAME_HEIGHT * 1.5;
+        const PLAYER_INGAME_WIDTH = Math.round(PLAYER_SPRITE_FILE_WIDTH * 0.5);
+        const PLAYER_INGAME_HEIGHT = Math.round(PLAYER_SPRITE_FILE_HEIGHT * 0.5);
+        const ENEMY_INGAME_WIDTH = Math.round(ENEMY_SPRITE_FILE_WIDTH * 0.5);
+        const ENEMY_INGAME_HEIGHT = Math.round(ENEMY_SPRITE_FILE_HEIGHT * 0.5);
+        const CHAMPION_INGAME_WIDTH = Math.round(ENEMY_INGAME_WIDTH * 2.5);
+        const CHAMPION_INGAME_HEIGHT = Math.round(ENEMY_INGAME_HEIGHT * 2.5); const BOSS_INGAME_WIDTH = Math.round(BOSS_SPRITE_FILE_WIDTH * 6);
+        const BOSS_INGAME_HEIGHT = Math.round(BOSS_SPRITE_FILE_HEIGHT * 6);
 
-
-        // --- ASSET LOADING ---
-        let assetsLoadedCount = 0;
-        const totalAssets = 5;
+        // Sprites
         const mageSprite = new Image();
         const enemySprite = new Image();
         const championBlueSprite = new Image();
         const championRedSprite = new Image();
         const championYellowSprite = new Image();
+        const bossSprite = new Image();
+
+        let assetsLoadedCount = 0;
+        const totalAssets = 6; // The number of images we are loading
 
         function assetLoadedCallback() {
             assetsLoadedCount++;
             if (assetsLoadedCount === totalAssets) {
-                definePlatforms();
-                initGame();
-                requestAnimationFrame(gameLoop);
+                definePlatforms(); // Define platforms once assets potentially influencing them are ready (though not in this case)
+                // Don't call initGame() here, wait for start button
+                currentGameState = GameStates.MAIN_MENU; // Set initial state
+                document.getElementById('start-menu-screen').style.display = 'flex';
+                lastTime = 0; // Reset timer for masterLoop
+                masterLoop(0); // Start the master loop for menu animations
             }
         }
-        mageSprite.onload = assetLoadedCallback;
-        enemySprite.onload = assetLoadedCallback;
-        championBlueSprite.onload = assetLoadedCallback;
-        championRedSprite.onload = assetLoadedCallback;
-        championYellowSprite.onload = assetLoadedCallback;
-        mageSprite.onerror = () => console.error("Failed to load mage sprite.");
-        enemySprite.onerror = () => console.error("Failed to load enemy sprite.");
-        championBlueSprite.onerror = () => console.error("Failed to load champion blue sprite.");
-        championRedSprite.onerror = () => console.error("Failed to load champion red sprite.");
-        championYellowSprite.onerror = () => console.error("Failed to load champion yellow sprite.");
+        mageSprite.onload = assetLoadedCallback; enemySprite.onload = assetLoadedCallback; championBlueSprite.onload = assetLoadedCallback; championRedSprite.onload = assetLoadedCallback; championYellowSprite.onload = assetLoadedCallback;
+        bossSprite.onload = assetLoadedCallback;
+        mageSprite.onerror = () => console.error("Failed to load mage sprite."); enemySprite.onerror = () => console.error("Failed to load enemy sprite."); championBlueSprite.onerror = () => console.error("Failed to load champion blue sprite."); championRedSprite.onerror = () => console.error("Failed to load champion red sprite."); championYellowSprite.onerror = () => console.error("Failed to load champion yellow sprite.");
+        bossSprite.onerror = () => console.error("Failed to load boss sprite.");
+        mageSprite.src = 'https://i.imgur.com/MZ78TdH.png'; enemySprite.src = 'https://i.imgur.com/xQyBmlT.png'; championBlueSprite.src = 'https://i.imgur.com/bisVQxJ.png'; championRedSprite.src = 'https://i.imgur.com/F0Fqt3T.png'; championYellowSprite.src = 'https://i.imgur.com/zjO71pZ.png';
+        bossSprite.src = 'https://i.imgur.com/zZIKDo6.png';
 
-        mageSprite.src = 'https://i.imgur.com/MZ78TdH.png';
-        enemySprite.src = 'https://i.imgur.com/xQyBmlT.png';
-        championBlueSprite.src = 'https://i.imgur.com/bisVQxJ.png';
-        championRedSprite.src = 'https://i.imgur.com/F0Fqt3T.png';
-        championYellowSprite.src = 'https://i.imgur.com/zjO71pZ.png';
-
-        // --- GAME STATE ---
+        // --- GAME STATES ---
+        const GameStates = {
+            MAIN_MENU: 'MainMenu',
+            PLAYING: 'Playing',
+            PAUSED: 'Paused',
+            LEVEL_UP: 'LevelUp',
+            GAME_OVER: 'GameOver',
+            VICTORY: 'Victory'
+        };
+        let currentGameState = GameStates.MAIN_MENU; // Initial state        // --- GAME ENTITIES AND VARIABLES ---\
         let player;
+        let playerName = "Seraph";
         let enemies = [];
+        let boss = null;
         let projectiles = [];
-        let particles = [];
-        let thunderbolts = [];
+        let particles = []; // General game particles
+        let menuParticles = []; // Particles for the main menu
+        let thunderbolts = []; // Raios do jogador
+        let bossLightning = []; // Raios do boss
         let damageTexts = [];
         let grassBlades = [];
         let keys = {};
         let score = 0;
         let kills = 0;
-        let gameRunning = true;
-        let levelUpScreenActive = false;
-        let gameOver = false;
-        const GRAVITY = 0.35; // Might need adjustment for smaller player
+        // gameRunning, levelUpScreenActive, gameOver are now managed by currentGameState
+        const GRAVITY = 0.35;
         const GROUND_FRICTION = 0.8;
         let mouseIsDown = false;
         let lastPlayerX = 0;
@@ -301,41 +586,19 @@
         let waveBreakTimer = 0;
         let platforms = [];
 
+        // --- UI ELEMENTS ---
+        const starryBackground = document.getElementById('starry-background');
+        const startMenuScreen = document.getElementById('start-menu-screen');
+        const pauseMenuScreen = document.getElementById('pause-menu-screen');
+        const levelUpScreen = document.getElementById('level-up-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const uiContainer = document.getElementById('ui-container');
+        const leaderboardScreen = document.getElementById('leaderboard-screen');
+        const victoryScreen = document.getElementById('victory-screen');
 
-        function definePlatforms() {
-            platforms = [ // Adjusted platform heights slightly
-                { x: 0, y: GAME_HEIGHT - 20, width: 80, height: 20 }, { x: 0, y: GAME_HEIGHT - 40, width: 110, height: 20 },
-                { x: 0, y: GAME_HEIGHT - 60, width: 140, height: 20 }, { x: 30, y: GAME_HEIGHT - 80, width: 110, height: 20 },
-                { x: 60, y: GAME_HEIGHT - 100, width: 80, height: 20 }, { x: 90, y: GAME_HEIGHT - 120, width: 50, height: 20 },
-                { x: 180, y: GAME_HEIGHT - 20, width: 220, height: 20 }, { x: 200, y: GAME_HEIGHT - 40, width: 180, height: 20 },
-                { x: 220, y: GAME_HEIGHT - 60, width: 140, height: 20 }, { x: GAME_WIDTH - 20, y: GAME_HEIGHT - 20, width: 20, height: 20 },
-                { x: GAME_WIDTH - 40, y: GAME_HEIGHT - 30, width: 20, height: 10 }, { x: GAME_WIDTH - 60, y: GAME_HEIGHT - 40, width: 20, height: 10 },
-                { x: GAME_WIDTH - 80, y: GAME_HEIGHT - 50, width: 20, height: 10 }, { x: GAME_WIDTH - 100, y: GAME_HEIGHT - 60, width: 20, height: 10 },
-                { x: GAME_WIDTH - 120, y: GAME_HEIGHT - 70, width: 20, height: 10 }, { x: GAME_WIDTH - 140, y: GAME_HEIGHT - 80, width: 20, height: 10 },
-                { x: 140, y: GAME_HEIGHT - 20, width: 40, height: 20 },
-                { x: 400, y: GAME_HEIGHT - 20, width: Math.max(50, GAME_WIDTH - 400 - 140), height: 20 },// Adjusted width calculation
-            ];
-            initGrass();
-        }
 
-        function initGrass() {
-            grassBlades = [];
-            const grassDensityFactor = 0.2; // Slightly more dense for smaller blocks
-            const baseGrassHeight = 8;    // Shorter grass
-            const grassHeightVariance = 12; // Less variance for shorter grass
-
-            platforms.forEach(p => {
-                if (p.height <= 20 && p.width > 20) { // Check against new, shorter platform heights
-                    const numBlades = Math.floor(p.width * grassDensityFactor);
-                    for (let i = 0; i < numBlades; i++) {
-                        const grassX = p.x + Math.random() * p.width;
-                        grassBlades.push(new GrassBlade(grassX, p.y, baseGrassHeight, grassHeightVariance));
-                    }
-                }
-            });
-            grassBlades.sort((a, b) => a.x - b.x);
-        }
-
+        function definePlatforms() { /* ... unchanged ... */ platforms = [{ x: 0, y: GAME_HEIGHT - 20, width: 80, height: 20 }, { x: 0, y: GAME_HEIGHT - 40, width: 110, height: 20 }, { x: 0, y: GAME_HEIGHT - 60, width: 140, height: 20 }, { x: 30, y: GAME_HEIGHT - 80, width: 110, height: 20 }, { x: 60, y: GAME_HEIGHT - 100, width: 80, height: 20 }, { x: 90, y: GAME_HEIGHT - 120, width: 50, height: 20 }, { x: 180, y: GAME_HEIGHT - 20, width: 220, height: 20 }, { x: 200, y: GAME_HEIGHT - 40, width: 180, height: 20 }, { x: 220, y: GAME_HEIGHT - 60, width: 140, height: 20 }, { x: GAME_WIDTH - 20, y: GAME_HEIGHT - 20, width: 20, height: 20 }, { x: GAME_WIDTH - 40, y: GAME_HEIGHT - 30, width: 20, height: 10 }, { x: GAME_WIDTH - 60, y: GAME_HEIGHT - 40, width: 20, height: 10 }, { x: GAME_WIDTH - 80, y: GAME_HEIGHT - 50, width: 20, height: 10 }, { x: GAME_WIDTH - 100, y: GAME_HEIGHT - 60, width: 20, height: 10 }, { x: GAME_WIDTH - 120, y: GAME_HEIGHT - 70, width: 20, height: 10 }, { x: GAME_WIDTH - 140, y: GAME_HEIGHT - 80, width: 20, height: 10 }, { x: 140, y: GAME_HEIGHT - 20, width: 40, height: 20 }, { x: 400, y: GAME_HEIGHT - 20, width: Math.max(50, GAME_WIDTH - 400 - 140), height: 20 },]; initGrass(); }
+        function initGrass() { /* ... unchanged ... */ grassBlades = []; const grassDensityFactor = 0.2; const baseGrassHeight = 8; const grassHeightVariance = 12; platforms.forEach(p => { if (p.height <= 20 && p.width > 20) { const numBlades = Math.floor(p.width * grassDensityFactor); for (let i = 0; i < numBlades; i++) { const grassX = p.x + Math.random() * p.width; grassBlades.push(new GrassBlade(grassX, p.y, baseGrassHeight, grassHeightVariance)); } } }); grassBlades.sort((a, b) => a.x - b.x); }
         function random(min, max) { return Math.random() * (max - min) + min; }
         function randomInt(min, max) { return Math.floor(random(min, max + 1)); }
 
@@ -345,130 +608,823 @@
             this.finalAngle = naturalSway + this.currentBend;
         } draw(ctx) { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.finalAngle); ctx.fillStyle = this.color; ctx.beginPath(); ctx.moveTo(-this.bladeWidth / 2, 0); ctx.lineTo(this.bladeWidth / 2, 0); ctx.lineTo(this.bladeWidth / 3, -this.height * 0.7); ctx.lineTo(0, -this.height); ctx.lineTo(-this.bladeWidth / 3, -this.height * 0.7); ctx.closePath(); ctx.fill(); ctx.restore(); }
         }
-
-        class Player {
-            constructor() {
-                this.originalWidth = PLAYER_INGAME_WIDTH; // Use new in-game size
-                this.originalHeight = PLAYER_INGAME_HEIGHT;
-                this.width = this.originalWidth;
-                this.height = this.originalHeight;
-
-                const mainGround = platforms.find(p => p.y === GAME_HEIGHT - 20 && p.width > 200); // Adjusted for new platform height
-                this.x = (mainGround ? mainGround.x + mainGround.width / 2 : GAME_WIDTH / 2) - this.width / 2;
-                this.y = (mainGround ? mainGround.y - this.height : GAME_HEIGHT - this.height - 30); // Adjusted spawn Y
-                this.baseJumpHeight = 7; // May need adjustment with smaller player
-
-                this.vx = 0; this.vy = 0; this.baseSpeed = 1.2; this.speed = this.baseSpeed; this.jumpHeight = this.baseJumpHeight; this.maxJumps = 1; this.jumpsLeft = this.maxJumps; this.onGround = false; this.hp = 100; this.maxHp = 100; this.defense = 0; this.projectileDamage = 5; this.critChance = 0.05; this.critMultiplier = 1.5; this.baseAttackSpeed = 550; this.attackSpeed = this.baseAttackSpeed; this.shootCooldown = 0; this.projectileSize = 5; this.projectileHits = 1; this.level = 1; this.xp = 0; this.xpToNextLevel = 100; this.lifeSteal = 0; this.invulnerableTimer = 0; this.baseInvulnerabilityDuration = 500; this.invulnerabilityDuration = this.baseInvulnerabilityDuration; this.metersRun = 0; this.frictionShotThreshold = 100; this.frictionProjectilesPerShot = 0; this.fragmentOnDeath = false; this.fragmentationProjectiles = 0; this.hasRage = false; this.hasRegrowth = false; this.activeThunderbolts = 0; this.luckFactor = 0; this.appraisalChoices = 3; this.hasBarrier = false; this.barrierCharges = 0; this.barrierMaxCharges = 1; this.barrierRechargeTime = 10000; this.barrierRechargeTimer = 0; this.overheatDamage = 0; this.tomeMultiplier = 1; this.wisp = null; this.focusAttackSpeedBonus = 0; this.focusTimer = 0; this.isMoving = false; this.cloakStacks = 0;
-            }
-            update(dt) { const prevX = this.x; if (keys['a'] || keys['arrowleft']) { this.vx = -this.speed; this.isMoving = true; } else if (keys['d'] || keys['arrowright']) { this.vx = this.speed; this.isMoving = true; } else { this.vx *= GROUND_FRICTION; this.isMoving = false; } this.x += this.vx; this.metersRun += Math.abs(this.x - prevX); if (this.frictionProjectilesPerShot > 0 && this.metersRun >= this.frictionShotThreshold) { for (let i = 0; i < this.frictionProjectilesPerShot; i++) { projectiles.push(new Projectile(this.x + this.width / 2, this.y + this.height / 2, random(-1, 1) * 2, -5, this.projectileDamage / 2, true, 'orange', 1, this.projectileSize * 0.8)); } this.metersRun = 0; } this.vy += GRAVITY; this.y += this.vy; this.onGround = false; platforms.forEach(platform => { if (this.x < platform.x + platform.width && this.x + this.width > platform.x && this.y < platform.y + platform.height && this.y + this.height > platform.y) { if (this.vy > 0 && (this.y + this.height - this.vy) <= platform.y) { this.y = platform.y - this.height; this.vy = 0; this.onGround = true; this.jumpsLeft = this.maxJumps; } else if (this.vx > 0 && (this.x + this.width - this.vx) <= platform.x) { this.x = platform.x - this.width; this.vx = 0; } else if (this.vx < 0 && (this.x - this.vx) >= platform.x + platform.width) { this.x = platform.x + platform.width; this.vx = 0; } else if (this.vy < 0 && this.y - this.vy >= platform.y + platform.height) { this.y = platform.y + platform.height; this.vy = 0.1; } } }); if (this.x < 0) this.x = 0; if (this.x + this.width > GAME_WIDTH) this.x = GAME_WIDTH - this.width; if (this.y + this.height > GAME_HEIGHT) { this.y = GAME_HEIGHT - this.height; this.vy = 0; this.onGround = true; this.jumpsLeft = this.maxJumps; } if (!this.isMoving) { this.focusTimer += dt; if (this.focusTimer >= 1000) { this.focusAttackSpeedBonus = Math.min(this.focusAttackSpeedBonus + 0.05, 0.5); this.attackSpeed = this.baseAttackSpeed * (1 - this.focusAttackSpeedBonus); this.focusTimer = 0; } } else { this.focusTimer = 0; this.focusAttackSpeedBonus = 0; this.attackSpeed = this.baseAttackSpeed; } if (this.shootCooldown > 0) this.shootCooldown -= dt; if (this.invulnerableTimer > 0) this.invulnerableTimer -= dt; if (this.hasBarrier && this.barrierCharges < this.barrierMaxCharges) { this.barrierRechargeTimer += dt; if (this.barrierRechargeTimer >= this.barrierRechargeTime) { this.barrierCharges++; this.barrierRechargeTimer = 0; } } if (this.wisp) this.wisp.update(dt); }
+        class Player { /* ... unchanged, uses PLAYER_INGAME_WIDTH/HEIGHT ... */ constructor() { this.originalWidth = PLAYER_INGAME_WIDTH; this.originalHeight = PLAYER_INGAME_HEIGHT; this.width = this.originalWidth; this.height = this.originalHeight; const mainGround = platforms.find(p => p.y === GAME_HEIGHT - 20 && p.width > 200); this.x = (mainGround ? mainGround.x + mainGround.width / 2 : GAME_WIDTH / 2) - this.width / 2; this.y = (mainGround ? mainGround.y - this.height : GAME_HEIGHT - this.height - 30); this.baseJumpHeight = 7; this.vx = 0; this.vy = 0; this.baseSpeed = 1.2; this.speed = this.baseSpeed; this.jumpHeight = this.baseJumpHeight; this.maxJumps = 1; this.jumpsLeft = this.maxJumps; this.onGround = false; this.hp = 100; this.maxHp = 100; this.defense = 0; this.projectileDamage = 5; this.critChance = 0.05; this.critMultiplier = 1.5; this.baseAttackSpeed = 550; this.attackSpeed = this.baseAttackSpeed; this.shootCooldown = 0; this.projectileSize = 5; this.projectileHits = 1; this.level = 1; this.xp = 0; this.xpToNextLevel = 80; this.lifeSteal = 0; this.invulnerableTimer = 0; this.baseInvulnerabilityDuration = 500; this.invulnerabilityDuration = this.baseInvulnerabilityDuration; this.metersRun = 0; this.frictionShotThreshold = 100; this.frictionProjectilesPerShot = 0; this.fragmentOnDeath = false; this.fragmentationProjectiles = 0; this.hasRage = false; this.hasRegrowth = false; this.activeThunderbolts = 0; this.luckFactor = 0; this.appraisalChoices = 3; this.hasBarrier = false; this.barrierCharges = 0; this.barrierMaxCharges = 1; this.barrierRechargeTime = 10000; this.barrierRechargeTimer = 0; this.overheatDamage = 0; this.tomeMultiplier = 1; this.wisp = null; this.focusAttackSpeedBonus = 0; this.focusTimer = 0; this.isMoving = false; this.cloakStacks = 0; } update(dt) { const prevX = this.x; if (keys['a'] || keys['arrowleft']) { this.vx = -this.speed; this.isMoving = true; } else if (keys['d'] || keys['arrowright']) { this.vx = this.speed; this.isMoving = true; } else { this.vx *= GROUND_FRICTION; this.isMoving = false; } this.x += this.vx; this.metersRun += Math.abs(this.x - prevX); if (this.frictionProjectilesPerShot > 0 && this.metersRun >= this.frictionShotThreshold) { for (let i = 0; i < this.frictionProjectilesPerShot; i++) { projectiles.push(new Projectile(this.x + this.width / 2, this.y + this.height / 2, random(-1, 1) * 2, -5, this.projectileDamage / 2, true, 'orange', 1, this.projectileSize * 0.8)); } this.metersRun = 0; } this.vy += GRAVITY; this.y += this.vy; this.onGround = false; platforms.forEach(platform => { if (this.x < platform.x + platform.width && this.x + this.width > platform.x && this.y < platform.y + platform.height && this.y + this.height > platform.y) { if (this.vy > 0 && (this.y + this.height - this.vy) <= platform.y) { this.y = platform.y - this.height; this.vy = 0; this.onGround = true; this.jumpsLeft = this.maxJumps; } else if (this.vx > 0 && (this.x + this.width - this.vx) <= platform.x) { this.x = platform.x - this.width; this.vx = 0; } else if (this.vx < 0 && (this.x - this.vx) >= platform.x + platform.width) { this.x = platform.x + platform.width; this.vx = 0; } else if (this.vy < 0 && this.y - this.vy >= platform.y + platform.height) { this.y = platform.y + platform.height; this.vy = 0.1; } } }); if (this.x < 0) this.x = 0; if (this.x + this.width > GAME_WIDTH) this.x = GAME_WIDTH - this.width; if (this.y + this.height > GAME_HEIGHT) { this.y = GAME_HEIGHT - this.height; this.vy = 0; this.onGround = true; this.jumpsLeft = this.maxJumps; } if (!this.isMoving) { this.focusTimer += dt; if (this.focusTimer >= 1000) { this.focusAttackSpeedBonus = Math.min(this.focusAttackSpeedBonus + 0.05, 0.5); this.attackSpeed = this.baseAttackSpeed * (1 - this.focusAttackSpeedBonus); this.focusTimer = 0; } } else { this.focusTimer = 0; this.focusAttackSpeedBonus = 0; this.attackSpeed = this.baseAttackSpeed; } if (this.shootCooldown > 0) this.shootCooldown -= dt; if (this.invulnerableTimer > 0) this.invulnerableTimer -= dt; if (this.hasBarrier && this.barrierCharges < this.barrierMaxCharges) { this.barrierRechargeTimer += dt; if (this.barrierRechargeTimer >= this.barrierRechargeTime) { this.barrierCharges++; this.barrierRechargeTimer = 0; } } if (this.wisp) this.wisp.update(dt); }
             draw() { if (this.invulnerableTimer > 0 && Math.floor(this.invulnerableTimer / 100) % 2 === 0) { } else { ctx.drawImage(mageSprite, this.x, this.y, this.width, this.height); } if (this.hasBarrier && this.barrierCharges > 0) { ctx.strokeStyle = 'rgba(100,150,255,0.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.7, 0, Math.PI * 2); ctx.stroke(); } if (this.wisp) this.wisp.draw(); }
             jump() { if (this.jumpsLeft > 0) { this.vy = -this.jumpHeight; this.onGround = false; this.jumpsLeft--; } }
             shoot(mouseX, mouseY) { let currentDamage = this.projectileDamage; let currentAttackSpeed = this.attackSpeed; if (this.hasRage && this.hp / this.maxHp < 0.5) { const hpPercent = this.hp / this.maxHp; const damageBoost = (0.5 - hpPercent) / 0.5; currentDamage *= (1 + damageBoost * 0.5); } const dx = mouseX - (this.x + this.width / 2); const dy = mouseY - (this.y + this.height / 2); const angle = Math.atan2(dy, dx); projectiles.push(new Projectile(this.x + this.width / 2, this.y + this.height / 2, Math.cos(angle) * 3.5, Math.sin(angle) * 3.5, currentDamage, true, 'magenta', this.projectileHits, this.projectileSize)); this.shootCooldown = currentAttackSpeed; }
-            takeDamage(amount) { if (this.invulnerableTimer > 0) { if (this.cloakStacks > 0) { this.heal(1); } return; } if (this.hasBarrier && this.barrierCharges > 0) { this.barrierCharges--; this.invulnerableTimer = 200; return; } const actualDamage = Math.max(1, amount * (1 - (this.defense / 100))); this.hp -= actualDamage; for (let i = 0; i < 8; i++) { particles.push(new Particle(this.x + this.width / 2 + random(-this.width / 3, this.width / 3), this.y + this.height / 2 + random(-this.height / 3, this.height / 3), random(2, 5), ['#ff4d4d', '#ff8c00', '#ffd700', '#ff6347'][randomInt(0, 3)], random(-1.5, 1.5), random(-1.5, 1.5), random(300, 500))); } this.invulnerableTimer = this.invulnerabilityDuration; if (this.hp <= 0) { this.hp = 0; gameOver = true; gameRunning = false; showGameOverScreen(); } }
-            addXp(amount) { this.xp += amount; if (this.xp >= this.xpToNextLevel) { this.levelUp(); } }
-            levelUp() { this.level++; this.xp -= this.xpToNextLevel; this.xpToNextLevel = Math.floor(this.xpToNextLevel * 1.5); this.hp = Math.min(this.maxHp, this.hp + Math.floor(this.maxHp * 0.25)); levelUpScreenActive = true; gameRunning = false; displayUpgradeOptions(); }
+            takeDamage(amount) { if (this.invulnerableTimer > 0) { if (this.cloakStacks > 0) { this.heal(1); } return; } if (this.hasBarrier && this.barrierCharges > 0) { this.barrierCharges--; this.invulnerableTimer = 200; return; } const actualDamage = Math.max(1, amount * (1 - (this.defense / 100))); this.hp -= actualDamage; for (let i = 0; i < 8; i++) { particles.push(new Particle(this.x + this.width / 2 + random(-this.width / 3, this.width / 3), this.y + this.height / 2 + random(-this.height / 3, this.height / 3), random(2, 5), ['#ff4d4d', '#ff8c00', '#ffd700', '#ff6347'][randomInt(0, 3)], random(-1.5, 1.5), random(-1.5, 1.5), random(300, 500))); } this.invulnerableTimer = this.invulnerabilityDuration; if (this.hp <= 0) { this.hp = 0; currentGameState = GameStates.GAME_OVER; showGameOverScreen_JS(); } } // Changed to set game state
+            addXp(amount) {
+                this.xp += amount;
+                if (this.xp >= this.xpToNextLevel) {
+                    this.levelUp();
+                }
+            }
+            levelUp() {
+                this.level++;
+                this.xp -= this.xpToNextLevel;
+                this.xpToNextLevel = Math.floor(this.xpToNextLevel * 1.5);
+                this.hp = Math.min(this.maxHp, this.hp + Math.floor(this.maxHp * 0.25));
+                currentGameState = GameStates.LEVEL_UP;
+                displayUpgradeOptions();
+            } // Changed to set game state
             applyUpgrade(card) { card.effect(this); updateUI(); }
             heal(amount) { this.hp = Math.min(this.maxHp, this.hp + amount); }
         }
-
-        class Wisp { /* ... unchanged ... */ constructor(player) { this.player = player; this.radius = 8; this.x = player.x; this.y = player.y - player.height; this.orbitDistance = 30 + player.width * 0.2; this.orbitAngle = 0; this.orbitSpeed = 0.03; this.damage = player.projectileDamage / 2; this.attackSpeed = player.attackSpeed * 2; this.shootCooldown = 0; this.color = 'lightblue'; } update(dt) {
-            this.orbitDistance = 30 + this.player.width * 0.2; this.orbitAngle += this.orbitSpeed; this.x = this.player.x + this.player.width / 2 + Math.cos(this.orbitAngle) * this.orbitDistance; this.y = this.player.y + this.player.height / 2 + Math.sin(this.orbitAngle) * this.orbitDistance - 10; if (this.shootCooldown > 0) this.shootCooldown -= dt; if (this.shootCooldown <= 0 && enemies.length > 0) { let closestEnemy = null; let minDistSq = Infinity; enemies.forEach(enemy => { const distSq = (enemy.x - this.x) ** 2 + (enemy.y - this.y) ** 2; if (distSq < minDistSq) { minDistSq = distSq; closestEnemy = enemy; } }); if (closestEnemy) { const dx = closestEnemy.x + closestEnemy.width / 2 - this.x; const dy = closestEnemy.y + closestEnemy.height / 2 - this.y; const angle = Math.atan2(dy, dx); projectiles.push(new Projectile(this.x, this.y, Math.cos(angle) * 4, Math.sin(angle) * 4, this.damage, true, this.color, 1, 4)); this.shootCooldown = this.attackSpeed; } }
-            this.damage = this.player.projectileDamage / 2; this.attackSpeed = this.player.attackSpeed * 2;
-        } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); }
-        }
-
-        class Enemy {
-            constructor(x, y, isChampion = false, championType = null) {
-                this.isChampion = isChampion;
-                this.width = isChampion ? CHAMPION_INGAME_WIDTH : ENEMY_INGAME_WIDTH;
-                this.height = isChampion ? CHAMPION_INGAME_HEIGHT : ENEMY_INGAME_HEIGHT;
-
-                this.x = x; this.y = y;
-                this.baseSpeed = random(0.2, 0.5); this.speed = this.baseSpeed; this.slowMultiplier = 1; this.descendSpeedFactor = random(0.5, 0.8);
-                const waveMultiplier = 1 + Math.floor((currentWave - 1) / 3) * 0.3; this.championType = championType;
-                if (isChampion) { this.hp = (30 + player.level * 6) * waveMultiplier; this.damage = (8 + player.level * 1.5) * waveMultiplier; this.xpValue = (30 + player.level * 5) * waveMultiplier; this.projectileSize = 6; }
-                else { this.hp = (15 + player.level * 3) * waveMultiplier; this.damage = (5 + player.level) * waveMultiplier; this.xpValue = (10 + player.level * 2) * waveMultiplier; this.projectileSize = 4; }
-                this.maxHp = this.hp; this.shootCooldown = random(2000, 4000); this.timeToShoot = this.shootCooldown;
-                this.targetY = GAME_HEIGHT - random(this.height + 20, Math.min(this.height + 100, GAME_HEIGHT - this.height - 5)); // Adjusted for smaller platforms
-                this.reachedTargetY = false; this.angle = Math.PI / 2; this.isBleeding = false; this.bleedDamagePerTick = 0; this.bleedDuration = 0; this.isFrozen = false; this.freezeDuration = 0;
-            }
+        class Wisp { /* ... unchanged ... */ constructor(player) { this.player = player; this.radius = 8; this.x = player.x; this.y = player.y - player.height; this.orbitDistance = 30 + player.width * 0.2; this.orbitAngle = 0; this.orbitSpeed = 0.03; this.damage = player.projectileDamage / 2; this.attackSpeed = player.attackSpeed * 2; this.shootCooldown = 0; this.color = 'lightblue'; }
             update(dt) {
-                if (this.isFrozen && this.freezeDuration > 0) { this.freezeDuration -= dt; if (this.freezeDuration <= 0) { this.isFrozen = false; this.slowMultiplier = 1; } return; } this.speed = this.baseSpeed * this.slowMultiplier; if (player) { const dx_player = player.x + player.width / 2 - (this.x + this.width / 2); const dy_player = player.y + player.height / 2 - (this.y + this.height / 2); this.angle = Math.atan2(dy_player, dx_player); } else { this.angle = Math.PI / 2; } if (!this.reachedTargetY) { this.y += this.speed * this.descendSpeedFactor; if (this.y >= this.targetY) { this.y = this.targetY; this.reachedTargetY = true; } } else { if (player) { const dx_horizontal = player.x + player.width / 2 - (this.x + this.width / 2); if (Math.abs(dx_horizontal) > this.width / 4) { this.x += Math.sign(dx_horizontal) * this.speed; } } }
-                this.x = Math.max(0, Math.min(this.x, GAME_WIDTH - this.width)); if (this.isBleeding && this.bleedDuration > 0) { this.hp -= this.bleedDamagePerTick * (dt / 1000); damageTexts.push(new DamageText(this.x + this.width / 2, this.y, Math.round(this.bleedDamagePerTick * (dt / 1000)), 'darkred', 10)); this.bleedDuration -= dt; if (this.bleedDuration <= 0 || this.hp <= 0) { this.isBleeding = false; if (this.hp <= 0) this.die(true); } }
-                this.timeToShoot -= dt; if (this.timeToShoot <= 0 && player) { this.shoot(); this.timeToShoot = this.shootCooldown + random(-500, 500); }
+                this.orbitDistance = 30 + this.player.width * 0.2;
+                this.orbitAngle += this.orbitSpeed;
+                this.x = this.player.x + this.player.width / 2 + Math.cos(this.orbitAngle) * this.orbitDistance;
+                this.y = this.player.y + this.player.height / 2 + Math.sin(this.orbitAngle) * this.orbitDistance - 10;
+                if (this.shootCooldown > 0) this.shootCooldown -= dt;
+                if (this.shootCooldown <= 0 && enemies.length > 0) {
+                    let closestEnemy = null;
+                    let minDistSq = Infinity;
+                    enemies.forEach(enemy => {
+                        const distSq = (enemy.x - this.x) ** 2 + (enemy.y - this.y) ** 2;
+                        if (distSq < minDistSq) {
+                            minDistSq = distSq;
+                            closestEnemy = enemy;
+                        }
+                    });
+                    if (closestEnemy) {
+                        const dx = closestEnemy.x + closestEnemy.width / 2 - this.x;
+                        const dy = closestEnemy.y + closestEnemy.height / 2 - this.y;
+                        const angle = Math.atan2(dy, dx);
+                        projectiles.push(new Projectile(this.x, this.y, Math.cos(angle) * 4, Math.sin(angle) * 4, this.damage, true, this.color, 1, 4));
+                        this.shootCooldown = this.attackSpeed;
+                    }
+                }
+                this.damage = this.player.projectileDamage / 2;
+                this.attackSpeed = this.player.attackSpeed * 2;
             }
             draw() {
-                ctx.save(); ctx.translate(this.x + this.width / 2, this.y + this.height / 2); ctx.rotate(this.angle - Math.PI / 2); if (this.isFrozen) { ctx.filter = 'hue-rotate(200deg) saturate(2) brightness(0.8)'; } let spriteToDraw = enemySprite; if (this.isChampion) { switch (this.championType) { case 'blue': spriteToDraw = championBlueSprite; break; case 'red': spriteToDraw = championRedSprite; break; case 'yellow': spriteToDraw = championYellowSprite; break; } }
-                ctx.drawImage(spriteToDraw, -this.width / 2, -this.height / 2, this.width, this.height); ctx.filter = 'none'; ctx.restore(); if (this.isFrozen) { ctx.save(); ctx.globalAlpha = 0.3; ctx.fillStyle = '#4dabf7'; ctx.fillRect(this.x, this.y, this.width, this.height); ctx.globalAlpha = 1; ctx.restore(); } if (this.hp < this.maxHp) { ctx.fillStyle = 'grey'; ctx.fillRect(this.x, this.y - 10, this.width, 5); ctx.fillStyle = this.isBleeding ? '#8b0000' : 'darkred'; ctx.fillRect(this.x, this.y - 10, this.width * (this.hp / this.maxHp), 5); }
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
             }
+        }
+        class Enemy { /* ... uses new INGAME_WIDTH/HEIGHT constants ... */ constructor(x, y, isChampion = false, championType = null) { this.isChampion = isChampion; this.width = isChampion ? CHAMPION_INGAME_WIDTH : ENEMY_INGAME_WIDTH; this.height = isChampion ? CHAMPION_INGAME_HEIGHT : ENEMY_INGAME_HEIGHT; this.x = x; this.y = y; this.baseSpeed = random(0.2, 0.5); this.speed = this.baseSpeed; this.slowMultiplier = 1; this.descendSpeedFactor = random(0.5, 0.8); const waveMultiplier = 1 + Math.floor((currentWave - 1) / 3) * 0.3; this.championType = championType; if (isChampion) { this.hp = (30 + player.level * 6) * waveMultiplier; this.damage = (8 + player.level * 1.5) * waveMultiplier; this.xpValue = (30 + player.level * 5) * waveMultiplier; this.projectileSize = 6; } else { this.hp = (15 + player.level * 3) * waveMultiplier; this.damage = (5 + player.level) * waveMultiplier; this.xpValue = (10 + player.level * 2) * waveMultiplier; this.projectileSize = 4; } this.maxHp = this.hp; this.shootCooldown = random(2000, 4000); this.timeToShoot = this.shootCooldown; this.targetY = GAME_HEIGHT - random(this.height + 20, Math.min(this.height + 100, GAME_HEIGHT - this.height - 5)); this.reachedTargetY = false; this.angle = Math.PI / 2; this.isBleeding = false; this.bleedDamagePerTick = 0; this.bleedDuration = 0; this.isFrozen = false; this.freezeDuration = 0; } update(dt) {
+            if (this.isFrozen && this.freezeDuration > 0) { this.freezeDuration -= dt; if (this.freezeDuration <= 0) { this.isFrozen = false; this.slowMultiplier = 1; } return; } this.speed = this.baseSpeed * this.slowMultiplier; if (player) { const dx_player = player.x + player.width / 2 - (this.x + this.width / 2); const dy_player = player.y + player.height / 2 - (this.y + this.height / 2); this.angle = Math.atan2(dy_player, dx_player); } else { this.angle = Math.PI / 2; } if (!this.reachedTargetY) { this.y += this.speed * this.descendSpeedFactor; if (this.y >= this.targetY) { this.y = this.targetY; this.reachedTargetY = true; } } else { if (player) { const dx_horizontal = player.x + player.width / 2 - (this.x + this.width / 2); if (Math.abs(dx_horizontal) > this.width / 4) { this.x += Math.sign(dx_horizontal) * this.speed; } } }
+            this.x = Math.max(0, Math.min(this.x, GAME_WIDTH - this.width)); if (this.isBleeding && this.bleedDuration > 0) { this.hp -= this.bleedDamagePerTick * (dt / 1000); damageTexts.push(new DamageText(this.x + this.width / 2, this.y, Math.round(this.bleedDamagePerTick * (dt / 1000)), 'darkred', 10)); this.bleedDuration -= dt; if (this.bleedDuration <= 0 || this.hp <= 0) { this.isBleeding = false; if (this.hp <= 0) this.die(true); } }
+            this.timeToShoot -= dt; if (this.timeToShoot <= 0 && player) { this.shoot(); this.timeToShoot = this.shootCooldown + random(-500, 500); }
+        } draw() {
+            ctx.save(); ctx.translate(this.x + this.width / 2, this.y + this.height / 2); ctx.rotate(this.angle - Math.PI / 2); if (this.isFrozen) { ctx.filter = 'hue-rotate(200deg) saturate(2) brightness(0.8)'; } let spriteToDraw = enemySprite; if (this.isChampion) { switch (this.championType) { case 'blue': spriteToDraw = championBlueSprite; break; case 'red': spriteToDraw = championRedSprite; break; case 'yellow': spriteToDraw = championYellowSprite; break; } }
+            ctx.drawImage(spriteToDraw, -this.width / 2, -this.height / 2, this.width, this.height); ctx.filter = 'none'; ctx.restore(); if (this.isFrozen) { ctx.save(); ctx.globalAlpha = 0.3; ctx.fillStyle = '#4dabf7'; ctx.fillRect(this.x, this.y, this.width, this.height); ctx.globalAlpha = 1; ctx.restore(); } if (this.hp < this.maxHp) { ctx.fillStyle = 'grey'; ctx.fillRect(this.x, this.y - 10, this.width, 5); ctx.fillStyle = this.isBleeding ? '#8b0000' : 'darkred'; ctx.fillRect(this.x, this.y - 10, this.width * (this.hp / this.maxHp), 5); }
+        }
             shoot() { if (!player) return; const projectileColor = this.isChampion ? (this.championType === 'blue' ? '#4dabf7' : this.championType === 'red' ? '#ff6b6b' : this.championType === 'yellow' ? '#ffd43b' : '#ff6347') : '#ff6347'; projectiles.push(new Projectile(this.x + this.width / 2, this.y + this.height / 2, Math.cos(this.angle) * 3, Math.sin(this.angle) * 3, this.damage, false, projectileColor, 1, this.projectileSize)); }
             takeDamage(amount, isCrit) { if (this.hp <= 0) return; this.hp -= amount; const dmgColor = isCrit ? 'yellow' : 'white'; const dmgSize = isCrit ? 20 : 16; damageTexts.push(new DamageText(this.x + this.width / 2, this.y - 5, Math.round(amount), dmgColor, dmgSize)); if (player.lifeSteal > 0) player.heal(amount * (player.lifeSteal / 100)); if (this.hp <= 0) this.die(); }
             die(diedFromBleed = false) { if (!diedFromBleed) { kills++; player.addXp(this.xpValue); } if (this.isChampion) { if (this.championType === 'yellow') { for (let i = 0; i < 3; i++) { let targetX = random(50, GAME_WIDTH - 50); if (enemies.length > 1) { const otherEnemies = enemies.filter(e => e !== this); if (otherEnemies.length > 0) { targetX = otherEnemies[randomInt(0, otherEnemies.length - 1)].x + 16; } } thunderbolts.push(new Thunderbolt(targetX)); } } else if (this.championType === 'red') { enemies.forEach(e => { if (e !== this) { const dx = e.x - this.x; const dy = e.y - this.y; const distance = Math.sqrt(dx * dx + dy * dy); if (distance < 100) { e.takeDamage(this.damage * 0.8, false); } } }); for (let i = 0; i < 15; i++) { particles.push(new Particle(this.x + this.width / 2 + random(-30, 30), this.y + this.height / 2 + random(-30, 30), random(3, 8), ['#ff6b6b', '#ff8787', '#ffa8a8', '#ffb3b3'][randomInt(0, 3)], random(-3, 3), random(-3, 3), random(500, 800))); } } else if (this.championType === 'blue') { enemies.forEach(e => { if (e !== this) { const dx = e.x - this.x; const dy = e.y - this.y; const distance = Math.sqrt(dx * dx + dy * dy); if (distance < 80) { e.isFrozen = true; e.freezeDuration = 4000; e.slowMultiplier = 0; } } }); for (let i = 0; i < 12; i++) { particles.push(new Particle(this.x + this.width / 2 + random(-25, 25), this.y + this.height / 2 + random(-25, 25), random(2, 6), ['#4dabf7', '#74c0fc', '#a5d8ff', '#d0ebff'][randomInt(0, 3)], random(-2, 2), random(-2, 2), random(600, 1000))); } } } if (player.fragmentOnDeath && player.fragmentationProjectiles > 0) { for (let i = 0; i < player.fragmentationProjectiles; i++) { const angle = random(0, Math.PI * 2); projectiles.push(new Projectile(this.x + this.width / 2, this.y + this.height / 2, Math.cos(angle) * 2.5, Math.sin(angle) * 2.5, this.damage / 4, true, '#ffa500', 1, 3)); } } const index = enemies.indexOf(this); if (index > -1) enemies.splice(index, 1); }
+        } class Boss extends Enemy {
+            constructor(x, y) {
+                super(x, y, true, 'boss'); // Call parent constructor
+                this.width = BOSS_INGAME_WIDTH;
+                this.height = BOSS_INGAME_HEIGHT;
+                this.hp = 2500 + player.level * 150;
+                this.maxHp = this.hp;
+                this.damage = 25 + player.level * 2;
+                this.xpValue = 1000;
+                this.speed = 0; // Boss fica fixo
+                this.shootCooldown = 0;                // Padrões de ataque
+                this.attackPatterns = ['barrage', 'lightning', 'summon'];
+                this.currentPattern = 0;
+                this.patternTimer = 0;
+                this.patternDuration = 12000; // 12 segundos por padrão (mais tempo)
+                this.patternCooldown = 3000; // 3 segundos de pausa entre padrões
+                this.isInCooldown = false;
+
+                // Específicos para cada padrão
+                this.barrageTimer = 0;
+                this.barrageInterval = 200; // Um pouco mais lento
+                this.barrageCount = 0;
+                this.maxBarrageShots = 40; // Mais tiros, mas mais espaçados
+
+                this.lightningTimer = 0;
+                this.lightningInterval = 1200; // Intervalo maior entre raios
+                this.lightningCount = 0;
+                this.maxLightningStrikes = 10; // Mais raios
+
+                this.summonTimer = 0;
+                this.summonInterval = 1800; // Mais tempo entre invocações
+                this.summonCount = 0;
+                this.maxSummons = 8; // Mais inimigos
+
+                this.introTimer = 2000; // 2 segundos de entrada dramática
+                this.isIntroPhase = true;
+            }
+
+            update(dt) {
+                // Fase de introdução
+                if (this.isIntroPhase) {
+                    this.introTimer -= dt;
+                    if (this.introTimer <= 0) {
+                        this.isIntroPhase = false;
+                        this.startNewPattern();
+                    }
+                    return;
+                }
+
+                // Cooldown entre padrões
+                if (this.isInCooldown) {
+                    this.patternTimer += dt;
+                    if (this.patternTimer >= this.patternCooldown) {
+                        this.isInCooldown = false;
+                        this.patternTimer = 0;
+                        this.startNewPattern();
+                    }
+                    return;
+                }
+
+                // Executar padrão atual
+                this.patternTimer += dt;
+                const currentPatternName = this.attackPatterns[this.currentPattern];
+
+                switch (currentPatternName) {
+                    case 'barrage':
+                        this.executeBarragePattern(dt);
+                        break;
+                    case 'lightning':
+                        this.executeLightningPattern(dt);
+                        break;
+                    case 'summon':
+                        this.executeSummonPattern(dt);
+                        break;
+                }
+
+                // Verificar se o padrão acabou
+                if (this.patternTimer >= this.patternDuration || this.isPatternComplete()) {
+                    this.endCurrentPattern();
+                }
+            }
+
+            startNewPattern() {
+                this.currentPattern = (this.currentPattern + 1) % this.attackPatterns.length;
+                this.patternTimer = 0;
+                this.resetPatternCounters();
+
+                // Mensagem visual do padrão
+                this.showPatternMessage();
+            }
+
+            resetPatternCounters() {
+                this.barrageCount = 0;
+                this.lightningCount = 0;
+                this.summonCount = 0;
+                this.barrageTimer = 0;
+                this.lightningTimer = 0;
+                this.summonTimer = 0;
+            }
+
+            executeBarragePattern(dt) {
+                this.barrageTimer += dt;
+                if (this.barrageTimer >= this.barrageInterval && this.barrageCount < this.maxBarrageShots) {
+                    this.shootBarrage();
+                    this.barrageTimer = 0;
+                    this.barrageCount++;
+                }
+            }
+
+            executeLightningPattern(dt) {
+                this.lightningTimer += dt;
+                if (this.lightningTimer >= this.lightningInterval && this.lightningCount < this.maxLightningStrikes) {
+                    this.createLightningStrike();
+                    this.lightningTimer = 0;
+                    this.lightningCount++;
+                }
+            }
+
+            executeSummonPattern(dt) {
+                this.summonTimer += dt;
+                if (this.summonTimer >= this.summonInterval && this.summonCount < this.maxSummons) {
+                    this.summonEnemy();
+                    this.summonTimer = 0;
+                    this.summonCount++;
+                }
+            }
+
+            shootBarrage() {
+                if (!player) return;
+
+                // Saraivada de 3 projéteis em direções ligeiramente diferentes
+                for (let i = 0; i < 3; i++) {
+                    const baseAngle = Math.atan2(player.y - (this.y + this.height * 0.7), player.x - (this.x + this.width / 2));
+                    const spread = 0.3; // Espalhamento dos tiros
+                    const angle = baseAngle + (i - 1) * spread;
+                    const speed = 5;
+
+                    projectiles.push(new Projectile(
+                        this.x + this.width / 2 + (i - 1) * 30,
+                        this.y + this.height * 0.7,
+                        Math.cos(angle) * speed,
+                        Math.sin(angle) * speed,
+                        this.damage,
+                        false,
+                        '#ff4da6',
+                        1,
+                        10
+                    ));
+                }
+
+                // Efeito visual de muzzle flash
+                for (let i = 0; i < 5; i++) {
+                    particles.push(new Particle(
+                        this.x + this.width / 2 + random(-50, 50),
+                        this.y + this.height * 0.7 + random(-20, 20),
+                        random(4, 8),
+                        ['#ff4da6', '#ff8da6', '#ffa6c9'][randomInt(0, 2)],
+                        random(-2, 2),
+                        random(-2, 2),
+                        200
+                    ));
+                }
+            } createLightningStrike() {
+                // Criar múltiplos raios do boss em posições aleatórias
+                for (let i = 0; i < 2; i++) {
+                    let targetX = random(50, GAME_WIDTH - 50);
+
+                    // 50% de chance de mirar no jogador
+                    if (player && Math.random() < 0.5) {
+                        targetX = player.x + player.width / 2 + random(-100, 100);
+                    }
+
+                    bossLightning.push(new BossLightning(targetX));
+                }
+
+                // Efeito visual no boss
+                for (let i = 0; i < 8; i++) {
+                    particles.push(new Particle(
+                        this.x + this.width / 2 + random(-100, 100),
+                        this.y + this.height * 0.6 + random(-30, 30),
+                        random(6, 12),
+                        ['#ff4500', '#ff6600', '#ff8800'][randomInt(0, 2)], // Cores laranja/vermelhas
+                        random(-1, 1),
+                        random(-1, 1),
+                        400
+                    ));
+                }
+            }
+
+            summonEnemy() {
+                // Invocar inimigo em posição aleatória nas bordas
+                const side = randomInt(0, 1); // 0 = esquerda, 1 = direita
+                const spawnX = side === 0 ? 0 : GAME_WIDTH - ENEMY_INGAME_WIDTH;
+                const spawnY = random(200, GAME_HEIGHT - 100);
+
+                // Criar inimigo comum
+                const summonedEnemy = new Enemy(spawnX, spawnY, false);
+                summonedEnemy.speed *= 1.2; // Inimigos invocados são um pouco mais rápidos
+                summonedEnemy.hp = summonedEnemy.hp * 0.7; // Mas têm menos vida
+                enemies.push(summonedEnemy);
+
+                // Efeito visual de invocação
+                for (let i = 0; i < 15; i++) {
+                    particles.push(new Particle(
+                        spawnX + ENEMY_INGAME_WIDTH / 2 + random(-30, 30),
+                        spawnY + ENEMY_INGAME_HEIGHT / 2 + random(-30, 30),
+                        random(3, 7),
+                        ['#8e44ad', '#9b59b6', '#bb8fce'][randomInt(0, 2)],
+                        random(-3, 3),
+                        random(-3, 3),
+                        600
+                    ));
+                }
+
+                // Efeito no boss também
+                for (let i = 0; i < 5; i++) {
+                    particles.push(new Particle(
+                        this.x + this.width / 2 + random(-50, 50),
+                        this.y + this.height * 0.8 + random(-20, 20),
+                        random(4, 8),
+                        ['#8e44ad', '#9b59b6'][randomInt(0, 1)],
+                        random(-2, 2),
+                        random(-2, 2),
+                        300
+                    ));
+                }
+            }
+
+            isPatternComplete() {
+                const currentPatternName = this.attackPatterns[this.currentPattern];
+                switch (currentPatternName) {
+                    case 'barrage':
+                        return this.barrageCount >= this.maxBarrageShots;
+                    case 'lightning':
+                        return this.lightningCount >= this.maxLightningStrikes;
+                    case 'summon':
+                        return this.summonCount >= this.maxSummons;
+                    default:
+                        return false;
+                }
+            } endCurrentPattern() {
+                this.isInCooldown = true;
+                this.patternTimer = 0;
+
+                // Mostrar mensagem de pausa
+                const message = document.createElement('div');
+                message.textContent = 'Boss preparando próximo ataque...';
+                message.style.position = 'absolute';
+                message.style.top = '30%';
+                message.style.left = '50%';
+                message.style.transform = 'translate(-50%,-50%)';
+                message.style.color = '#95a5a6';
+                message.style.fontSize = '1.4em';
+                message.style.fontWeight = 'normal';
+                message.style.zIndex = '180';
+                message.style.fontFamily = "'Courier New',Courier,monospace";
+                message.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                message.style.textAlign = 'center';
+
+                document.body.appendChild(message);
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        document.body.removeChild(message);
+                    }
+                }, 2500);
+            }
+
+            showPatternMessage() {
+                const messages = {
+                    'barrage': 'Boss prepara Saraivada de Projéteis!',
+                    'lightning': 'Boss invoca Tempestade de Raios!',
+                    'summon': 'Boss convoca seus Servos!'
+                };
+
+                const currentPatternName = this.attackPatterns[this.currentPattern];
+                const message = document.createElement('div');
+                message.textContent = messages[currentPatternName];
+                message.style.position = 'absolute';
+                message.style.top = '25%';
+                message.style.left = '50%';
+                message.style.transform = 'translate(-50%,-50%)';
+                message.style.color = '#ff6b6b';
+                message.style.fontSize = '1.8em';
+                message.style.fontWeight = 'bold';
+                message.style.zIndex = '200';
+                message.style.fontFamily = "'Courier New',Courier,monospace";
+                message.style.textShadow = '3px 3px 6px rgba(0,0,0,0.9)';
+                message.style.textAlign = 'center';
+
+                document.body.appendChild(message);
+                setTimeout(() => {
+                    if (document.body.contains(message)) {
+                        document.body.removeChild(message);
+                    }
+                }, 3000);
+            }
+
+            draw() {
+                // Efeito de tremor durante a introdução
+                let offsetX = 0, offsetY = 0;
+                if (this.isIntroPhase) {
+                    offsetX = random(-3, 3);
+                    offsetY = random(-2, 2);
+                }
+
+                ctx.drawImage(bossSprite, this.x + offsetX, this.y + offsetY, this.width, this.height);
+
+                // Barra de vida do boss (mais proeminente)
+                if (this.hp < this.maxHp) {
+                    const barWidth = GAME_WIDTH * 0.8;
+                    const barHeight = 20;
+                    const barX = (GAME_WIDTH - barWidth) / 2;
+                    const barY = 50;
+
+                    // Fundo da barra
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    ctx.fillRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10);
+
+                    // Barra cinza
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(barX, barY, barWidth, barHeight);
+
+                    // Barra de vida
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.fillRect(barX, barY, barWidth * (this.hp / this.maxHp), barHeight);
+
+                    // Texto
+                    ctx.fillStyle = 'white';
+                    ctx.font = 'bold 16px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`BOSS - ${Math.ceil(this.hp)}/${this.maxHp}`, GAME_WIDTH / 2, barY + 35);
+                    ctx.textAlign = 'left';
+                }                // Indicador do padrão atual (se não estiver na introdução)
+                if (!this.isIntroPhase) {
+                    const patternNames = {
+                        'barrage': 'SARAIVADA',
+                        'lightning': 'RAIOS',
+                        'summon': 'INVOCAÇÃO'
+                    };
+
+                    const currentPatternName = this.attackPatterns[this.currentPattern];
+                    const displayName = patternNames[currentPatternName];
+
+                    if (!this.isInCooldown) {
+                        // Fundo do indicador
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                        ctx.fillRect(GAME_WIDTH / 2 - 120, 90, 240, 35);
+
+                        // Nome do padrão
+                        ctx.fillStyle = '#f39c12';
+                        ctx.font = 'bold 14px Courier New';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(displayName, GAME_WIDTH / 2, 108);
+
+                        // Barra de progresso do padrão
+                        const progressBarWidth = 200;
+                        const progressBarHeight = 8;
+                        const progressBarX = GAME_WIDTH / 2 - progressBarWidth / 2;
+                        const progressBarY = 112;
+
+                        // Fundo da barra
+                        ctx.fillStyle = '#333';
+                        ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
+
+                        // Progresso
+                        const progress = Math.min(1, this.patternTimer / this.patternDuration);
+                        ctx.fillStyle = '#e67e22';
+                        ctx.fillRect(progressBarX, progressBarY, progressBarWidth * progress, progressBarHeight);
+
+                        ctx.textAlign = 'left';
+                    } else {
+                        // Mostrar pausa
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                        ctx.fillRect(GAME_WIDTH / 2 - 80, 90, 160, 25);
+
+                        ctx.fillStyle = '#95a5a6';
+                        ctx.font = 'bold 14px Courier New';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('PAUSA', GAME_WIDTH / 2, 108);
+                        ctx.textAlign = 'left';
+                    }
+                }
+            }
+
+            die() {
+                kills++;
+                player.addXp(this.xpValue);
+                const index = enemies.indexOf(this);
+                if (index > -1) enemies.splice(index, 1);
+                boss = null;
+                currentGameState = GameStates.VICTORY;
+                showVictoryScreen_JS();
+            }
         }
 
 
         class Projectile { /* ... unchanged ... */ constructor(x, y, vx, vy, damage, isPlayerProjectile, color = 'magenta', hitsLeft = 1, size = 5) { this.x = x; this.y = y; this.vx = vx; this.vy = vy; this.damage = damage; this.radius = size; this.isPlayerProjectile = isPlayerProjectile; this.color = color; this.hitsLeft = hitsLeft; this.hasHitTargets = []; } update(dt) { this.x += this.vx; this.y += this.vy; if (this.isPlayerProjectile) { particles.push(new Particle(this.x, this.y, this.radius / 2, this.color, random(-0.3, 0.3), random(-0.3, 0.3), 150)); } if (this.x < -this.radius || this.x > GAME_WIDTH + this.radius || this.y < -this.radius || this.y > GAME_HEIGHT + this.radius) this.remove(); } draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); } remove() { const index = projectiles.indexOf(this); if (index > -1) projectiles.splice(index, 1); } onHit(target) { this.hitsLeft--; this.hasHitTargets.push(target); if (this.hitsLeft <= 0) this.remove(); } }
         class Particle { /* ... unchanged ... */ constructor(x, y, size, color, vx, vy, life = 500) { this.x = x; this.y = y; this.size = size; this.color = color; this.life = life; this.initialLife = life; this.vx = vx; this.vy = vy; } update(dt) { this.life -= dt; this.x += this.vx; this.y += this.vy; } draw() { ctx.globalAlpha = Math.max(0, this.life / this.initialLife); ctx.fillStyle = this.color; ctx.fillRect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size); ctx.globalAlpha = 1; } }
         class DamageText { /* ... unchanged ... */ constructor(x, y, text, color = 'white', size = 16) { this.x = x + random(-5, 5); this.y = y; this.text = text; this.color = color; this.size = size; this.life = 700; this.initialLife = this.life; this.vy = -0.5; this.opacity = 1; } update(dt) { this.life -= dt; this.y += this.vy; this.opacity = Math.max(0, (this.life / this.initialLife) * 1.5); } draw() { ctx.font = `bold ${this.size}px 'Courier New', Courier, monospace`; ctx.textAlign = 'center'; ctx.globalAlpha = this.opacity; ctx.fillStyle = this.color; ctx.strokeStyle = 'black'; ctx.lineWidth = 2; ctx.strokeText(this.text, this.x, this.y); ctx.fillText(this.text, this.x, this.y); ctx.globalAlpha = 1; ctx.textAlign = 'left'; } }
-        class Thunderbolt { /* ... unchanged ... */ constructor(targetX) { this.x = targetX; this.y = 0; this.width = 15; this.height = GAME_HEIGHT; this.damage = player.projectileDamage * 1.5; this.duration = 250; this.timer = this.duration; this.color = 'yellow'; } update(dt) { this.timer -= dt; this.height = GAME_HEIGHT; enemies.forEach(enemy => { if (this.timer > 0 && enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) { enemy.takeDamage(this.damage * (dt / 200), false); } }); } draw() { if (this.timer > 0) { const alpha = Math.sin(((this.duration - this.timer) / this.duration) * Math.PI); ctx.globalAlpha = alpha * 0.7; ctx.fillStyle = this.color; ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height); ctx.globalAlpha = 1; } } isDone() { return this.timer <= 0; } }
+        class Thunderbolt { /* ... unchanged ... */ constructor(targetX) { this.x = targetX; this.y = 0; this.width = 15; this.height = GAME_HEIGHT; this.damage = player.projectileDamage * 1.5; this.duration = 250; this.timer = this.duration; this.color = 'yellow'; } update(dt) { this.timer -= dt; this.height = GAME_HEIGHT; enemies.forEach(enemy => { if (this.timer > 0 && enemy.type !== 'boss' && enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) { enemy.takeDamage(this.damage * (dt / 200), false); } }); } draw() { if (this.timer > 0) { const alpha = Math.sin(((this.duration - this.timer) / this.duration) * Math.PI); ctx.globalAlpha = alpha * 0.7; ctx.fillStyle = this.color; ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height); ctx.globalAlpha = 1; } } isDone() { return this.timer <= 0; } }
+        class BossLightning {
+            constructor(targetX) {
+                this.x = targetX;
+                this.y = 0;
+                this.width = 20; // Um pouco mais largo que o raio do jogador
+                this.height = GAME_HEIGHT;
+                this.damage = 40 + player.level * 3; // Dano fixo do boss
+                this.duration = 400; // Dura mais tempo
+                this.timer = this.duration;
+                this.color = '#ff4500'; // Cor laranja/vermelha para distinguir
+                this.warningTimer = 300; // 300ms de aviso antes do raio
+                this.isWarning = true;
+            }
 
-        const upgradeCards = [{ name: "Catalyst", description: "Projectile Damage +2", rarity: "common", effect: p => p.projectileDamage += 2 * p.tomeMultiplier }, { name: "Eyesight", description: "Critical Chance +5%", rarity: "common", effect: p => p.critChance += 0.05 * p.tomeMultiplier }, { name: "Growth", description: "Max. HP +10", rarity: "common", effect: p => { p.maxHp += 10 * p.tomeMultiplier; p.hp += 10 * p.tomeMultiplier; } }, { name: "Impulse", description: "Jump Height +30%", rarity: "common", effect: p => p.jumpHeight *= (1 + 0.30 * p.tomeMultiplier) }, { name: "Renew", description: "Heal to Max. HP", rarity: "common", effect: p => p.hp = p.maxHp }, { name: "Resist", description: "Defense +4%", rarity: "common", effect: p => p.defense += 4 * p.tomeMultiplier }, { name: "Resonance", description: "Atk Speed +12%", rarity: "common", effect: p => p.baseAttackSpeed *= (1 - 0.12 * p.tomeMultiplier) }, { name: "Stability", description: "Projectile hits +1 target", rarity: "common", effect: p => p.projectileHits += 1 * p.tomeMultiplier }, { name: "Swift", description: "Movement Speed +20%", rarity: "common", effect: p => p.speed *= (1 + 0.20 * p.tomeMultiplier) }, { name: "Catalyst+", description: "Projectile Damage +4", rarity: "uncommon", effect: p => p.projectileDamage += 4 }, { name: "Charge", description: "Projectile Size +20%", rarity: "uncommon", effect: p => p.projectileSize *= 1.20 }, { name: "Cloak", description: "Invulnerability after damage +10% duration", rarity: "uncommon", effect: p => { p.invulnerabilityDuration *= 1.10; p.cloakStacks = (p.cloakStacks || 0) + 1; } }, { name: "Fragmentation", description: "Killed enemies release 2 weaker projectiles", rarity: "uncommon", effect: p => { p.fragmentOnDeath = true; p.fragmentationProjectiles = Math.max(p.fragmentationProjectiles, 2); } }, { name: "Friction", description: "For every ~100px run, launch 1 explosive projectile upwards", rarity: "uncommon", effect: p => p.frictionProjectilesPerShot = Math.max(p.frictionProjectilesPerShot, 1) }, { name: "Growth+", description: "Max. HP +20", rarity: "uncommon", effect: p => { p.maxHp += 20; p.hp += 20; } }, { name: "Gush", description: "Adds +1 Jump", rarity: "uncommon", effect: p => p.maxJumps++ }, { name: "Leech", description: "Life Steal of 3% Damage", rarity: "uncommon", effect: p => p.lifeSteal = Math.max(p.lifeSteal, 3) }, { name: "Luck", description: "Better chance for uncommon+ items", rarity: "uncommon", effect: p => p.luckFactor += 0.1 }, { name: "Precision", description: "Criticals deal +50% damage", rarity: "uncommon", effect: p => p.critMultiplier += 0.5 }, { name: "Rage", description: "If under 50% HP, raises projectile damage (up to 50%)", rarity: "uncommon", effect: p => p.hasRage = true }, { name: "Regrowth", description: "Regenerates HP% based on # of enemies alive", rarity: "uncommon", effect: p => p.hasRegrowth = true }, { name: "Resonance+", description: "Attack Speed +24%", rarity: "uncommon", effect: p => p.baseAttackSpeed *= (1 - 0.24) }, { name: "Shrink", description: "Makes you 10% smaller", rarity: "uncommon", effect: p => { p.width = Math.max(16, Math.round(PLAYER_INGAME_WIDTH * 0.9)); p.height = Math.max(16, Math.round(PLAYER_INGAME_HEIGHT * 0.9)); } }, { name: "Swift+", description: "Movement Speed +40%", rarity: "uncommon", effect: p => p.speed *= 1.40 }, { name: "Thunderbolt", description: "Calls 2 thunderbolts every few sec", rarity: "uncommon", effect: p => p.activeThunderbolts = Math.max(p.activeThunderbolts, 2) }, { name: "Appraisal", description: "+1 item choice from now on", rarity: "epic", effect: p => p.appraisalChoices++ }, { name: "Barrier", description: "Shield blocks damage once every few sec", rarity: "epic", effect: p => { p.hasBarrier = true; p.barrierCharges = Math.max(p.barrierCharges, 1); } }, { name: "Cold", description: "Enemies -1% speed per hit (max 80%)", rarity: "epic", effect: p => p.hasColdEffect = true }, { name: "Fragmentation+", description: "Killed enemies release 6 weaker projectiles", rarity: "epic", effect: p => { p.fragmentOnDeath = true; p.fragmentationProjectiles = Math.max(p.fragmentationProjectiles, 6); } }, { name: "Friction+", description: "For every ~100px run, launch 3 explosive projectiles upwards", rarity: "epic", effect: p => p.frictionProjectilesPerShot = Math.max(p.frictionProjectilesPerShot, 3) }, { name: "Focus", description: "Gain attack speed per sec still. Resets on move.", rarity: "epic", effect: p => { p.canFocus = true; } }, { name: "Growth++", description: "Max. HP +40", rarity: "epic", effect: p => { p.maxHp += 40; p.hp += 40; } }, { name: "Leech+", description: "Life Steal of 9% Damage", rarity: "epic", effect: p => p.lifeSteal = Math.max(p.lifeSteal, 9) }, { name: "Overheat", description: "Your body deals 40 damage on contact", rarity: "epic", effect: p => p.overheatDamage = Math.max(p.overheatDamage, 40) }, { name: "Thunderbolt+", description: "Calls 6 thunderbolts every few sec", rarity: "epic", effect: p => p.activeThunderbolts = Math.max(p.activeThunderbolts, 6) }, { name: "Tome", description: "New common items are 35% more effective", rarity: "epic", effect: p => p.tomeMultiplier = 1.35 }, { name: "Will-O-Wisp", description: "Summons a wisp (half your atk dmg/spd)", rarity: "epic", effect: p => { if (!p.wisp) p.wisp = new Wisp(p); } }, { name: "Wound", description: "Dealing damage applies bleeding", rarity: "epic", effect: p => p.canApplyBleed = true }, { name: "Absorbent", description: "Projectile hits during invuln heal 1 HP. Get 4 Cloak stacks.", rarity: "ascension", effect: p => { for (let i = 0; i < 4; i++) { p.invulnerabilityDuration *= 1.10; p.cloakStacks = (p.cloakStacks || 0) + 1; } p.isAbsorbent = true; } }, { name: "Anti-Aircraft", description: "Larger friction projectile explosions. Get 10 Friction stacks.", rarity: "ascension", effect: p => { for (let i = 0; i < 10; i++)p.frictionProjectilesPerShot = Math.max(p.frictionProjectilesPerShot, (p.frictionProjectilesPerShot || 0) + 1); } }];
-        function getUpgradeOptions() { const numChoices = player.appraisalChoices || 3; const chosenCards = []; const availableCards = [...upgradeCards]; const luck = player.luckFactor || 0; const levelBonus = player.level / 50; const rarityWeights = { common: 0.6 - luck - levelBonus, uncommon: 0.3 + luck * 0.5 + levelBonus * 0.5, epic: 0.08 + luck * 0.3 + levelBonus * 0.3, ascension: 0.02 + luck * 0.2 + levelBonus * 0.2 }; let totalWeight = 0; for (const r in rarityWeights) { if (rarityWeights[r] < 0) rarityWeights[r] = 0.01; totalWeight += rarityWeights[r]; } for (const r in rarityWeights) { rarityWeights[r] /= totalWeight; } for (let i = 0; i < numChoices; i++) { if (availableCards.length === 0) break; let randomRoll = Math.random(); let selectedRarity = "common"; let cumulativeWeight = 0; if (randomRoll < (cumulativeWeight += rarityWeights.ascension)) selectedRarity = "ascension"; else if (randomRoll < (cumulativeWeight += rarityWeights.epic)) selectedRarity = "epic"; else if (randomRoll < (cumulativeWeight += rarityWeights.uncommon)) selectedRarity = "uncommon"; else selectedRarity = "common"; let pool = availableCards.filter(card => card.rarity === selectedRarity); if (pool.length === 0) { pool = availableCards.filter(card => card.rarity === "common"); if (pool.length === 0) pool = availableCards; } if (pool.length === 0) break; const randomIndex = Math.floor(Math.random() * pool.length); const selectedCard = pool[randomIndex]; chosenCards.push(selectedCard); const indexInAvailable = availableCards.indexOf(selectedCard); if (indexInAvailable > -1) availableCards.splice(indexInAvailable, 1); } return chosenCards; }
-        function displayUpgradeOptions() { const cardOptionsContainer = document.getElementById('card-options'); cardOptionsContainer.innerHTML = ''; const options = getUpgradeOptions(); if (options.length === 0) { cardOptionsContainer.innerHTML = "<p>No more upgrades available!</p><button onclick='selectUpgrade(null)'>Continue</button>"; } else { options.forEach(card => { const cardDiv = document.createElement('div'); cardDiv.className = `card card-${card.rarity || 'common'}`; cardDiv.innerHTML = `<h3>${card.name} (${card.rarity})</h3><p>${card.description}</p>`; cardDiv.onclick = () => selectUpgrade(card); cardOptionsContainer.appendChild(cardDiv); }); } document.getElementById('level-up-screen').style.display = 'flex'; }
-        function selectUpgrade(card) { if (player && card) player.applyUpgrade(card); document.getElementById('level-up-screen').style.display = 'none'; levelUpScreenActive = false; gameRunning = true; lastTime = 0; requestAnimationFrame(gameLoop); }
+            update(dt) {
+                this.timer -= dt;
 
-        function initGame() { definePlatforms(); player = new Player(); enemies = []; projectiles = []; particles = []; thunderbolts = []; damageTexts = []; score = 0; kills = 0; gameRunning = true; levelUpScreenActive = false; gameOver = false; mouseIsDown = false; if (player) lastPlayerX = player.x; currentWave = 1; enemiesSpawnedThisWave = 0; enemiesInWave = 4; waveInProgress = false; waveCompleted = false; waveBreakTimer = 0; document.getElementById('game-over-screen').style.display = 'none'; document.getElementById('level-up-screen').style.display = 'none'; document.getElementById('wave-notification').style.display = 'none'; startWave(); updateUI(); }
-        function startWave() { waveInProgress = true; waveCompleted = false; enemiesSpawnedThisWave = 0; enemiesInWave = currentWave === 1 ? 4 : Math.min(4 + (currentWave - 1) * 2, 20); const notification = document.getElementById('wave-notification'); notification.textContent = `Wave ${currentWave}`; notification.style.display = 'block'; setTimeout(() => { notification.style.display = 'none'; }, 2000); spawnWaveEnemies(); }
+                // Fase de aviso
+                if (this.isWarning) {
+                    this.warningTimer -= dt;
+                    if (this.warningTimer <= 0) {
+                        this.isWarning = false;
+                    }
+                    return;
+                }
 
-        function spawnWaveEnemies() {
-            if (enemiesSpawnedThisWave < enemiesInWave && waveInProgress) {
-                let isChampion = false; let championType = null;
+                // Atacar apenas o jogador
+                if (this.timer > 0 && player) {
+                    if (player.x < this.x + this.width &&
+                        player.x + player.width > this.x &&
+                        player.y < this.y + this.height &&
+                        player.y + player.height > this.y) {
+                        player.takeDamage(this.damage * (dt / 200));
+                    }
+                }
+            }
 
-                if (currentWave % 3 === 0) { if (enemiesSpawnedThisWave === Math.floor(enemiesInWave / 2)) { isChampion = true; } }
-                else { const championChance = 0.03; isChampion = Math.random() < championChance; }
+            draw() {
+                if (this.isWarning) {
+                    // Mostrar linha de aviso
+                    ctx.globalAlpha = Math.sin((this.warningTimer / 300) * Math.PI * 4) * 0.5 + 0.5;
+                    ctx.fillStyle = '#ffff00'; // Amarelo para aviso
+                    ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
+                    ctx.globalAlpha = 1;
+                } else if (this.timer > 0) {
+                    // Raio do boss ativo
+                    const alpha = Math.sin(((this.duration - this.timer) / this.duration) * Math.PI);
+                    ctx.globalAlpha = alpha * 0.8;
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
 
-                const enemySpawnWidth = isChampion ? CHAMPION_INGAME_WIDTH : ENEMY_INGAME_WIDTH;
-                const enemySpawnHeight = isChampion ? CHAMPION_INGAME_HEIGHT : ENEMY_INGAME_HEIGHT;
+                    // Efeito adicional de borda
+                    ctx.globalAlpha = alpha * 0.4;
+                    ctx.fillStyle = '#ff6600';
+                    ctx.fillRect(this.x - this.width / 2 - 2, this.y, this.width + 4, this.height);
 
-                const x = random(0, GAME_WIDTH - enemySpawnWidth);
-                const y = -enemySpawnHeight;
+                    ctx.globalAlpha = 1;
+                }
+            }
 
-                if (isChampion) { championType = ['blue', 'red', 'yellow'][randomInt(0, 2)]; showChampionMessage(); }
-                const newEnemy = new Enemy(x, y, isChampion, championType); enemies.push(newEnemy); enemiesSpawnedThisWave++;
-                if (enemiesSpawnedThisWave < enemiesInWave) { setTimeout(spawnWaveEnemies, random(800, 1500)); }
+            isDone() {
+                return this.timer <= 0 && !this.isWarning;
             }
         }
 
-        function showChampionMessage() { const message = document.createElement('div'); message.textContent = 'A Champion enemy appeared!'; message.style.position = 'absolute'; message.style.top = '35%'; message.style.left = '50%'; message.style.transform = 'translate(-50%, -50%)'; message.style.color = '#f4d03f'; message.style.fontSize = '1.3em'; message.style.fontWeight = 'normal'; message.style.zIndex = '150'; message.style.fontFamily = "'Courier New', Courier, monospace"; message.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)'; document.body.appendChild(message); setTimeout(() => { if (document.body.contains(message)) { document.body.removeChild(message); } }, 2500); }
+        const upgradeCards = [{ name: "Catalyst", description: "Projectile Damage +3", rarity: "common", effect: p => p.projectileDamage += 3 * p.tomeMultiplier }, { name: "Eyesight", description: "Critical Chance +5%", rarity: "common", effect: p => p.critChance += 0.05 * p.tomeMultiplier }, { name: "Growth", description: "Max. HP +15", rarity: "common", effect: p => { p.maxHp += 15 * p.tomeMultiplier; p.hp += 15 * p.tomeMultiplier; } }, { name: "Impulse", description: "Jump Height +30%", rarity: "common", effect: p => p.jumpHeight *= (1 + 0.30 * p.tomeMultiplier) }, { name: "Renew", description: "Heal to Max. HP", rarity: "common", effect: p => p.hp = p.maxHp }, { name: "Resist", description: "Defense +5%", rarity: "common", effect: p => p.defense += 5 * p.tomeMultiplier }, { name: "Resonance", description: "Atk Speed +15%", rarity: "common", effect: p => p.baseAttackSpeed *= (1 - 0.15 * p.tomeMultiplier) }, { name: "Stability", description: "Projectile hits +1 target", rarity: "common", effect: p => p.projectileHits += 1 * p.tomeMultiplier }, { name: "Swift", description: "Movement Speed +20%", rarity: "common", effect: p => p.speed *= (1 + 0.20 * p.tomeMultiplier) }, { name: "Catalyst+", description: "Projectile Damage +6", rarity: "uncommon", effect: p => p.projectileDamage += 6 }, { name: "Charge", description: "Projectile Size +25%", rarity: "uncommon", effect: p => p.projectileSize *= 1.25 }, { name: "Cloak", description: "Invulnerability after damage +12% duration", rarity: "uncommon", effect: p => { p.invulnerabilityDuration *= 1.12; p.cloakStacks = (p.cloakStacks || 0) + 1; } }, { name: "Fragmentation", description: "Killed enemies release 2 weaker projectiles", rarity: "uncommon", effect: p => { p.fragmentOnDeath = true; p.fragmentationProjectiles = Math.max(p.fragmentationProjectiles, 2); } }, { name: "Friction", description: "For every ~100px run, launch 1 explosive projectile upwards", rarity: "uncommon", effect: p => p.frictionProjectilesPerShot = Math.max(p.frictionProjectilesPerShot, 1) }, { name: "Growth+", description: "Max. HP +25", rarity: "uncommon", effect: p => { p.maxHp += 25; p.hp += 25; } }, { name: "Gush", description: "Adds +1 Jump", rarity: "uncommon", effect: p => p.maxJumps++ }, { name: "Leech", description: "Life Steal of 3% Damage", rarity: "uncommon", effect: p => p.lifeSteal = Math.max(p.lifeSteal, 3) }, { name: "Luck", description: "Better chance for uncommon+ items", rarity: "uncommon", effect: p => p.luckFactor += 0.1 }, { name: "Precision", description: "Criticals deal +50% damage", rarity: "uncommon", effect: p => p.critMultiplier += 0.5 }, { name: "Rage", description: "If under 50% HP, raises projectile damage (up to 50%)", rarity: "uncommon", effect: p => p.hasRage = true }, { name: "Regrowth", description: "Regenerates HP% based on # of enemies alive", rarity: "uncommon", effect: p => p.hasRegrowth = true }, { name: "Resonance+", description: "Attack Speed +28%", rarity: "uncommon", effect: p => p.baseAttackSpeed *= (1 - 0.28) }, { name: "Shrink", description: "Makes you 10% smaller", rarity: "uncommon", effect: p => { p.width = Math.max(16, Math.round(PLAYER_INGAME_WIDTH * 0.9)); p.height = Math.max(16, Math.round(PLAYER_INGAME_HEIGHT * 0.9)); } }, { name: "Swift+", description: "Movement Speed +40%", rarity: "uncommon", effect: p => p.speed *= 1.40 }, { name: "Thunderbolt", description: "Calls 2 thunderbolts every few sec", rarity: "uncommon", effect: p => p.activeThunderbolts = Math.max(p.activeThunderbolts, 2) }, { name: "Appraisal", description: "+1 item choice from now on", rarity: "epic", effect: p => p.appraisalChoices++ }, { name: "Barrier", description: "Shield blocks damage once every few sec", rarity: "epic", effect: p => { p.hasBarrier = true; p.barrierCharges = Math.max(p.barrierCharges, 1); } }, { name: "Cold", description: "Enemies -1% speed per hit (max 80%)", rarity: "epic", effect: p => p.hasColdEffect = true }, { name: "Fragmentation+", description: "Killed enemies release 6 weaker projectiles", rarity: "epic", effect: p => { p.fragmentOnDeath = true; p.fragmentationProjectiles = Math.max(p.fragmentationProjectiles, 6); } }, { name: "Friction+", description: "For every ~100px run, launch 3 explosive projectiles upwards", rarity: "epic", effect: p => p.frictionProjectilesPerShot = Math.max(p.frictionProjectilesPerShot, 3) }, { name: "Focus", description: "Gain attack speed per sec still. Resets on move.", rarity: "epic", effect: p => { p.canFocus = true; } }, { name: "Growth++", description: "Max. HP +50", rarity: "epic", effect: p => { p.maxHp += 50; p.hp += 50; } }, { name: "Leech+", description: "Life Steal of 9% Damage", rarity: "epic", effect: p => p.lifeSteal = Math.max(p.lifeSteal, 9) }, { name: "Overheat", description: "Your body deals 40 damage on contact", rarity: "epic", effect: p => p.overheatDamage = Math.max(p.overheatDamage, 40) }, { name: "Thunderbolt+", description: "Calls 6 thunderbolts every few sec", rarity: "epic", effect: p => p.activeThunderbolts = Math.max(p.activeThunderbolts, 6) }, { name: "Tome", description: "New common items are 35% more effective", rarity: "epic", effect: p => p.tomeMultiplier = 1.35 }, { name: "Will-O-Wisp", description: "Summons a wisp (half your atk dmg/spd)", rarity: "epic", effect: p => { if (!p.wisp) p.wisp = new Wisp(p); } }, { name: "Wound", description: "Dealing damage applies bleeding", rarity: "epic", effect: p => p.canApplyBleed = true }, { name: "Absorbent", description: "Projectile hits during invuln heal 1 HP. Get 4 Cloak stacks.", rarity: "ascension", effect: p => { for (let i = 0; i < 4; i++) { p.invulnerabilityDuration *= 1.10; p.cloakStacks = (p.cloakStacks || 0) + 1; } p.isAbsorbent = true; } }, { name: "Anti-Aircraft", description: "Larger friction projectile explosions. Get 10 Friction stacks.", rarity: "ascension", effect: p => { for (let i = 0; i < 10; i++)p.frictionProjectilesPerShot = Math.max(p.frictionProjectilesPerShot, (p.frictionProjectilesPerShot || 0) + 1); } }];
+        function getUpgradeOptions() { const numChoices = player.appraisalChoices || 3; const chosenCards = []; const availableCards = [...upgradeCards]; const luck = player.luckFactor || 0; const levelBonus = player.level / 50; const rarityWeights = { common: 0.6 - luck - levelBonus, uncommon: 0.3 + luck * 0.5 + levelBonus * 0.5, epic: 0.08 + luck * 0.3 + levelBonus * 0.3, ascension: 0.02 + luck * 0.2 + levelBonus * 0.2 }; let totalWeight = 0; for (const r in rarityWeights) { if (rarityWeights[r] < 0) rarityWeights[r] = 0.01; totalWeight += rarityWeights[r]; } for (const r in rarityWeights) { rarityWeights[r] /= totalWeight; } for (let i = 0; i < numChoices; i++) { if (availableCards.length === 0) break; let randomRoll = Math.random(); let selectedRarity = "common"; let cumulativeWeight = 0; if (randomRoll < (cumulativeWeight += rarityWeights.ascension)) selectedRarity = "ascension"; else if (randomRoll < (cumulativeWeight += rarityWeights.epic)) selectedRarity = "epic"; else if (randomRoll < (cumulativeWeight += rarityWeights.uncommon)) selectedRarity = "uncommon"; else selectedRarity = "common"; let pool = availableCards.filter(card => card.rarity === selectedRarity); if (pool.length === 0) { pool = availableCards.filter(card => card.rarity === "common"); if (pool.length === 0) pool = availableCards; } if (pool.length === 0) break; const randomIndex = Math.floor(Math.random() * pool.length); const selectedCard = pool[randomIndex]; chosenCards.push(selectedCard); const indexInAvailable = availableCards.indexOf(selectedCard); if (indexInAvailable > -1) availableCards.splice(indexInAvailable, 1); } return chosenCards; }
+        function displayUpgradeOptions() { const cardOptionsContainer = document.getElementById('card-options'); cardOptionsContainer.innerHTML = ''; const options = getUpgradeOptions(); if (options.length === 0) { cardOptionsContainer.innerHTML = "<p>No more upgrades available!</p><button onclick='selectUpgrade(null)'>Continue</button>"; } else { options.forEach(card => { const cardDiv = document.createElement('div'); cardDiv.className = `card card-${card.rarity || 'common'}`; cardDiv.innerHTML = `<h3>${card.name} (${card.rarity})</h3><p>${card.description}</p>`; cardDiv.onclick = () => selectUpgrade(card); cardOptionsContainer.appendChild(cardDiv); }); } levelUpScreen.style.display = 'flex'; }
+        function selectUpgrade(card) { if (player && card) player.applyUpgrade(card); levelUpScreen.style.display = 'none'; currentGameState = GameStates.PLAYING; lastTime = 0;/* masterLoop already running */ } function initGame() {
+            definePlatforms(); // Includes initGrass()
+            player = new Player();
+            enemies = [];
+            projectiles = [];
+            particles = [];
+            thunderbolts = [];
+            bossLightning = []; // Inicializar array dos raios do boss
+            damageTexts = [];
+            boss = null;
+            menuParticles = []; // Clear menu particles if any were left
+            score = 0;
+            kills = 0;
+            currentWave = 1;
+            enemiesSpawnedThisWave = 0;
+            enemiesInWave = 4;
+            waveInProgress = false;
+            waveCompleted = false;
+            waveBreakTimer = 0;
+            lastTime = 0; // Reset timer for game loop part
+            startWave();
+            updateUI();
+            uiContainer.style.display = 'block'; // Show game UI
+            starryBackground.style.display = 'block';
+        }
+
+        function resetToMainMenu() {
+            currentGameState = GameStates.MAIN_MENU;
+            startMenuScreen.style.display = 'flex';
+            pauseMenuScreen.style.display = 'none';
+            levelUpScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            uiContainer.style.display = 'none';
+            starryBackground.style.display = 'none';
+            waveInProgress = false; // Stop pending wave spawns            // Clear game entities for a fresh start if player goes back to main menu
+            enemies = [];
+            projectiles = [];
+            particles = [];
+            thunderbolts = [];
+            bossLightning = []; // Limpar raios do boss
+            damageTexts = []; player = null;
+            boss = null;
+            createMenuParticles(50); // Re-create menu particles
+            lastTime = 0;
+        }
+
+
+        function startWave() {
+            waveInProgress = true;
+            waveCompleted = false;
+            enemiesSpawnedThisWave = 0;
+            const notification = document.getElementById('wave-notification');
+
+            if (currentWave === 9) {
+                enemiesInWave = 1; // The boss
+                notification.textContent = `Wave ${currentWave} - The Final Stand`;
+                spawnBoss();
+            } else {
+                enemiesInWave = currentWave === 1 ? 4 : Math.min(4 + (currentWave - 1) * 2, 20);
+                notification.textContent = `Wave ${currentWave}`;
+                spawnWaveEnemies();
+            }
+
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        } function spawnBoss() {
+            // Boss posicionado no centro-topo, parcialmente fora da tela para mostrar apenas a cabeça
+            const x = GAME_WIDTH / 2 - BOSS_INGAME_WIDTH / 2;
+            const y = -BOSS_INGAME_HEIGHT * 0.7; // Apenas 30% do boss visível (a cabeça)
+            boss = new Boss(x, y);
+            enemies.push(boss); // Add boss to enemies array for collision checks
+            enemiesSpawnedThisWave++;
+        }
+
+        function spawnWaveEnemies() {
+            if (enemiesSpawnedThisWave < enemiesInWave && waveInProgress) {
+                let isChampion = false;
+                let championType = null;
+                if (currentWave % 3 === 0) {
+                    if (enemiesSpawnedThisWave === Math.floor(enemiesInWave / 2)) {
+                        isChampion = true;
+                    }
+                } else {
+                    const championChance = 0.03;
+                    isChampion = Math.random() < championChance;
+                }
+                const enemySpawnWidth = isChampion ? CHAMPION_INGAME_WIDTH : ENEMY_INGAME_WIDTH;
+                const enemySpawnHeight = isChampion ? CHAMPION_INGAME_HEIGHT : ENEMY_INGAME_HEIGHT;
+                const x = random(0, GAME_WIDTH - enemySpawnWidth);
+                const y = -enemySpawnHeight;
+                if (isChampion) {
+                    championType = ['blue', 'red', 'yellow'][randomInt(0, 2)];
+                    showChampionMessage();
+                }
+                const newEnemy = new Enemy(x, y, isChampion, championType);
+                enemies.push(newEnemy);
+                enemiesSpawnedThisWave++;
+                if (enemiesSpawnedThisWave < enemiesInWave) {
+                    setTimeout(spawnWaveEnemies, random(800, 1500));
+                }
+            }
+        }
+        function showChampionMessage() { const message = document.createElement('div'); message.textContent = 'A Champion enemy appeared!'; message.style.position = 'absolute'; message.style.top = '35%'; message.style.left = '50%'; message.style.transform = 'translate(-50%,-50%)'; message.style.color = '#f4d03f'; message.style.fontSize = '1.3em'; message.style.fontWeight = 'normal'; message.style.zIndex = '150'; message.style.fontFamily = "'Courier New',Courier,monospace"; message.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)'; document.body.appendChild(message); setTimeout(() => { if (document.body.contains(message)) { document.body.removeChild(message); } }, 2500); }
         function checkWaveCompletion() { if (waveInProgress && enemiesSpawnedThisWave >= enemiesInWave && enemies.length === 0) { waveInProgress = false; waveCompleted = true; waveBreakTimer = timeBetweenWaves; currentWave++; } }
         function checkCollisions() {
             for (let i = 0; i < projectiles.length; i++) { for (let j = i + 1; j < projectiles.length; j++) { const p1 = projectiles[i]; const p2 = projectiles[j]; if (p1 && p2 && p1.isPlayerProjectile !== p2.isPlayerProjectile) { const dx = p1.x - p2.x; const dy = p1.y - p2.y; const distance = Math.sqrt(dx * dx + dy * dy); if (distance < p1.radius + p2.radius) { for (let k = 0; k < 6; k++) { particles.push(new Particle((p1.x + p2.x) / 2 + random(-5, 5), (p1.y + p2.y) / 2 + random(-5, 5), random(2, 4), ['#ffff00', '#ff8c00', '#ffffff', '#ff6b6b'][randomInt(0, 3)], random(-2, 2), random(-2, 2), random(200, 400))); } p1.remove(); p2.remove(); j--; if (!projectiles[i]) break; } } } }
             projectiles.forEach(p => { if (!p) return; if (p.isPlayerProjectile) { enemies.forEach(e => { if (!e || p.hasHitTargets.includes(e)) return; if (p.x - p.radius < e.x + e.width && p.x + p.radius > e.x && p.y - p.radius < e.y + e.height && p.y + p.radius > e.y) { let damage = p.damage; let isCrit = false; if (Math.random() < player.critChance) { damage *= player.critMultiplier; isCrit = true; } e.takeDamage(damage, isCrit); p.onHit(e); if (player.hasColdEffect) { e.slowMultiplier = Math.max(0.2, e.slowMultiplier * 0.99); } if (player.canApplyBleed) { e.isBleeding = true; e.bleedDamagePerTick = p.damage * 0.1; e.bleedDuration = Math.max(e.bleedDuration, 3000); } } }); } else if (!p.isPlayerProjectile) { if (player && p.x - p.radius < player.x + player.width && p.x + p.radius > player.x && p.y - p.radius < player.y + player.height && p.y + p.radius > player.y) { player.takeDamage(p.damage); p.remove(); } } }); if (player && player.overheatDamage > 0) { enemies.forEach(e => { if (!e) return; if (player.x < e.x + e.width && player.x + player.width > e.x && player.y < e.y + e.height && player.y + player.height > e.y) { if (!e.overheatCooldown || e.overheatCooldown <= 0) { e.takeDamage(player.overheatDamage, false); e.overheatCooldown = 500; } } if (e.overheatCooldown > 0) e.overheatCooldown -= (1000 / 60); }); }
         }
         function updateUI() { if (!player) return; document.getElementById('hp-value').textContent = Math.ceil(player.hp); document.getElementById('max-hp-value').textContent = player.maxHp; document.getElementById('hp-bar').style.width = `${(player.hp / player.maxHp) * 100}%`; document.getElementById('xp-value').textContent = player.xp; document.getElementById('xp-next-level-value').textContent = player.xpToNextLevel; document.getElementById('xp-bar').style.width = `${(player.xp / player.xpToNextLevel) * 100}%`; document.getElementById('level-value').textContent = player.level; document.getElementById('wave-value').textContent = currentWave; document.getElementById('kills-value').textContent = kills; }
-        function showGameOverScreen() { document.getElementById('final-kills').textContent = kills; document.getElementById('game-over-screen').style.display = 'flex'; }
-        document.getElementById('restart-btn').onclick = function () { initGame(); lastTime = 0; requestAnimationFrame(gameLoop); };
+        function showGameOverScreen_JS() { // Renamed to avoid conflict with HTML element
+            saveToLeaderboard(playerName, kills);
+            document.getElementById('final-kills').textContent = kills;
+            gameOverScreen.style.display = 'flex';
+        }
 
-        let lastMouseX = GAME_WIDTH / 2; let lastMouseY = 0;
-        canvas.addEventListener('mousemove', (e) => { const rect = canvas.getBoundingClientRect(); lastMouseX = e.clientX - rect.left; lastMouseY = e.clientY - rect.top; });
-        canvas.addEventListener('mousedown', (e) => { mouseIsDown = true; }); canvas.addEventListener('mouseup', (e) => { mouseIsDown = false; }); canvas.addEventListener('mouseout', (e) => { mouseIsDown = false; });
-        window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; if (gameRunning && player && (e.key === ' ')) { e.preventDefault(); player.jump(); } });
+        function showVictoryScreen_JS() {
+            saveToLeaderboard(playerName, kills);
+            document.getElementById('victory-final-kills').textContent = kills;
+            victoryScreen.style.display = 'flex';
+        }
+
+        // --- LEADERBOARD FUNCTIONS ---
+        function getLeaderboard() {
+            const leaderboardData = localStorage.getItem('seraphLeaderboard');
+            return leaderboardData ? JSON.parse(leaderboardData) : [];
+        }
+
+        function saveToLeaderboard(nickname, score) {
+            const leaderboard = getLeaderboard();
+            leaderboard.push({ nickname, score });
+            leaderboard.sort((a, b) => b.score - a.score);
+            const top10 = leaderboard.slice(0, 10);
+            localStorage.setItem('seraphLeaderboard', JSON.stringify(top10));
+        }
+
+        function displayLeaderboard() {
+            const leaderboard = getLeaderboard();
+            const leaderboardBody = document.getElementById('leaderboard-body');
+            leaderboardBody.innerHTML = '';
+            leaderboard.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${entry.nickname}</td>
+                    <td>${entry.score}</td>
+                `;
+                leaderboardBody.appendChild(row);
+            });
+            startMenuScreen.style.display = 'none';
+            leaderboardScreen.style.display = 'flex';
+        }
+
+
+        // --- MENU PARTICLES ---
+        function createMenuParticles(count) {
+            menuParticles = [];
+            for (let i = 0; i < count; i++) {
+                menuParticles.push(new Particle(
+                    random(0, GAME_WIDTH), random(0, GAME_HEIGHT), // Random position
+                    random(1, 3), // Size
+                    ['#aaa', '#ccc', '#eee', '#fff8dc'][randomInt(0, 3)], // Colors (e.g., greys, light gold)
+                    random(-0.3, 0.3), random(-0.3, 0.3), // Slow velocity
+                    random(3000, 7000) // Longer life
+                ));
+            }
+        }
+
+        // --- EVENT LISTENERS FOR BUTTONS ---
+        document.getElementById('start-game-btn').onclick = () => {
+            const nicknameInput = document.getElementById('nickname-input');
+            playerName = nicknameInput.value.trim() || "Seraph";
+            startMenuScreen.style.display = 'none';
+            currentGameState = GameStates.PLAYING;
+            initGame(); // This will also call updateUI to show game HUD
+
+            if (playerName.toUpperCase() === 'DLM') {
+                player.hp = 99999;
+                player.maxHp = 99999;
+                player.projectileDamage = 5000;
+                player.level = 25;
+                currentWave = 8; // Set to 8, it will be incremented to 9
+                // Manually complete the wave to trigger the boss wave
+                enemies = [];
+                waveInProgress = true;
+                enemiesSpawnedThisWave = 1;
+                enemiesInWave = 1;
+                checkWaveCompletion();
+            }
+        };
+        document.getElementById('leaderboard-btn').onclick = () => {
+            displayLeaderboard();
+        };
+        document.getElementById('back-to-menu-btn').onclick = () => {
+            leaderboardScreen.style.display = 'none';
+            startMenuScreen.style.display = 'flex';
+        };
+        document.getElementById('resume-game-btn').onclick = () => {
+            pauseMenuScreen.style.display = 'none';
+            currentGameState = GameStates.PLAYING;
+            lastTime = 0; // Reset dt calculation
+        };
+        document.getElementById('main-menu-btn-pause').onclick = resetToMainMenu;
+        document.getElementById('restart-btn').onclick = () => {
+            gameOverScreen.style.display = 'none';
+            currentGameState = GameStates.PLAYING;
+            initGame();
+        };
+        document.getElementById('main-menu-btn-gameover').onclick = resetToMainMenu;
+        document.getElementById('restart-btn-victory').onclick = () => {
+            victoryScreen.style.display = 'none';
+            currentGameState = GameStates.PLAYING;
+            initGame();
+        };
+        document.getElementById('main-menu-btn-victory').onclick = resetToMainMenu;
+
+
+        // --- KEYBOARD INPUT ---
+        window.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            if (currentGameState === GameStates.PLAYING && player && (e.key === ' ')) {
+                e.preventDefault(); player.jump();
+            }
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (currentGameState === GameStates.PLAYING) {
+                    currentGameState = GameStates.PAUSED;
+                    pauseMenuScreen.style.display = 'flex';
+                } else if (currentGameState === GameStates.PAUSED) {
+                    currentGameState = GameStates.PLAYING;
+                    pauseMenuScreen.style.display = 'none';
+                    lastTime = 0; // Reset dt
+                }
+            }
+        });
         window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+        // Mouse listeners (unchanged)
+        let lastMouseX = GAME_WIDTH / 2; let lastMouseY = 0; canvas.addEventListener('mousemove', (e) => { const rect = canvas.getBoundingClientRect(); lastMouseX = e.clientX - rect.left; lastMouseY = e.clientY - rect.top; }); canvas.addEventListener('mousedown', (e) => { mouseIsDown = true; }); canvas.addEventListener('mouseup', (e) => { mouseIsDown = false; }); canvas.addEventListener('mouseout', (e) => { mouseIsDown = false; });
 
+
+        // --- MASTER GAME LOOP ---
         let lastTime = 0;
+
         let internalThunderboltTimer = 0;
         let regrowthTimer = 0;
 
-        function gameLoop(currentTime) {
-            if (gameOver && !levelUpScreenActive) return;
-            if (lastTime === 0) { lastTime = currentTime; requestAnimationFrame(gameLoop); return; }
-            const dt = currentTime - lastTime; lastTime = currentTime; const cappedDt = Math.min(dt, 100);
+        function masterLoop(currentTime) {
+            if (lastTime === 0 && currentGameState !== GameStates.MAIN_MENU) { // Prevent large dt on first game frame after menu
+                lastTime = currentTime;
+            } else if (currentGameState === GameStates.MAIN_MENU && lastTime === 0) { // For menu animations
+                lastTime = currentTime;
+            }
 
-            if (gameRunning) {
-                if (waveCompleted && waveBreakTimer > 0) { waveBreakTimer -= cappedDt; if (waveBreakTimer <= 0) { startWave(); } } else { checkWaveCompletion(); }
+
+            const dt = currentTime - lastTime;
+            lastTime = currentTime;
+            const cappedDt = Math.min(dt, 100); // Cap dt to prevent large jumps
+
+            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+            // Update and Draw based on state
+            if (currentGameState === GameStates.MAIN_MENU) {
+                // Update menu particles
+                menuParticles = menuParticles.filter(p => p.life > 0);
+                menuParticles.forEach(p => p.update(cappedDt));
+                if (menuParticles.length < 50 && Math.random() < 0.1) { // Replenish
+                    menuParticles.push(new Particle(random(0, GAME_WIDTH), random(0, GAME_HEIGHT), random(1, 3), ['#aaa', '#ccc', '#eee', '#fff8dc'][randomInt(0, 3)], random(-0.1, 0.1), random(-0.1, 0.1), random(3000, 7000)));
+                }
+                // Draw menu particles
+                menuParticles.forEach(p => p.draw());
+                // HTML/CSS handles the rest of the main menu display
+            } else if (currentGameState === GameStates.PLAYING) {
+                // --- Game Logic Updates ---
+                if (waveCompleted && waveBreakTimer > 0) { waveBreakTimer -= cappedDt; if (waveBreakTimer <= 0) { startWave(); } }
+                else { checkWaveCompletion(); }
                 if (player && player.activeThunderbolts > 0) internalThunderboltTimer += cappedDt;
                 if (player && player.hasRegrowth) regrowthTimer += cappedDt;
-                if (player && mouseIsDown && player.shootCooldown <= 0 && !levelUpScreenActive) { player.shoot(lastMouseX, lastMouseY); }
+                if (player && mouseIsDown && player.shootCooldown <= 0) { player.shoot(lastMouseX, lastMouseY); }
                 if (player && player.activeThunderbolts > 0 && internalThunderboltTimer >= THUNDERBOLT_INTERVAL) { for (let i = 0; i < player.activeThunderbolts; i++) { let targetX = random(50, GAME_WIDTH - 50); if (enemies.length > 0) targetX = enemies[randomInt(0, enemies.length - 1)].x + enemies[0].width / 2; thunderbolts.push(new Thunderbolt(targetX)); } internalThunderboltTimer = 0; }
                 if (player && player.hasRegrowth && regrowthTimer >= 1000) { const healPercent = enemies.length * 0.002 * player.level; player.heal(player.maxHp * healPercent); regrowthTimer = 0; }
                 if (player) player.update(cappedDt);
@@ -477,32 +1433,18 @@
                 particles = particles.filter(p => p.life > 0); particles.forEach(p => p.update(cappedDt));
                 damageTexts = damageTexts.filter(d => d.life > 0); damageTexts.forEach(d => d.update(cappedDt));
                 thunderbolts.forEach(tb => tb.update(cappedDt)); thunderbolts = thunderbolts.filter(tb => !tb.isDone());
+                bossLightning.forEach(bl => bl.update(cappedDt)); bossLightning = bossLightning.filter(bl => !bl.isDone());
                 grassBlades.forEach(blade => blade.update(cappedDt, player));
-                checkCollisions(); updateUI();
+                checkCollisions(); updateUI();                // --- Drawing Game Elements ---
+                platforms.forEach(p => { const brickWidth = 15; const brickHeight = 7; const platformColor1 = '#38761D'; const platformColor2 = '#2E6127'; const platformStrokeColor = '#1C4017'; for (let y_coord = p.y; y_coord < p.y + p.height; y_coord += brickHeight) { for (let x_coord = p.x; x_coord < p.x + p.width; x_coord += brickWidth) { ctx.strokeStyle = platformStrokeColor; ctx.strokeRect(x_coord, y_coord, Math.min(brickWidth, p.x + p.width - x_coord), Math.min(brickHeight, p.y + p.height - y_coord)); ctx.fillStyle = ((Math.floor(x_coord / brickWidth) + Math.floor(y_coord / brickHeight)) % 2 === 0) ? platformColor1 : platformColor2; ctx.fillRect(x_coord, y_coord, Math.min(brickWidth, p.x + p.width - x_coord), Math.min(brickHeight, p.y + p.height - y_coord)); } } });
+                grassBlades.forEach(blade => blade.draw(ctx)); particles.forEach(p => p.draw()); projectiles.forEach(p => p.draw()); enemies.forEach(e => e.draw()); if (player) player.draw(); thunderbolts.forEach(tb => tb.draw()); bossLightning.forEach(bl => bl.draw()); damageTexts.forEach(d => d.draw());
+
+            } else if (currentGameState === GameStates.PAUSED || currentGameState === GameStates.LEVEL_UP || currentGameState === GameStates.GAME_OVER || currentGameState === GameStates.VICTORY) {                // Draw the game as it was when paused/level_up/game_over
+                platforms.forEach(p => { const brickWidth = 15; const brickHeight = 7; const platformColor1 = '#38761D'; const platformColor2 = '#2E6127'; const platformStrokeColor = '#1C4017'; for (let y_coord = p.y; y_coord < p.y + p.height; y_coord += brickHeight) { for (let x_coord = p.x; x_coord < p.x + p.width; x_coord += brickWidth) { ctx.strokeStyle = platformStrokeColor; ctx.strokeRect(x_coord, y_coord, Math.min(brickWidth, p.x + p.width - x_coord), Math.min(brickHeight, p.y + p.height - y_coord)); ctx.fillStyle = ((Math.floor(x_coord / brickWidth) + Math.floor(y_coord / brickHeight)) % 2 === 0) ? platformColor1 : platformColor2; ctx.fillRect(x_coord, y_coord, Math.min(brickWidth, p.x + p.width - x_coord), Math.min(brickHeight, p.y + p.height - y_coord)); } } });
+                grassBlades.forEach(blade => blade.draw(ctx)); particles.forEach(p => p.draw()); projectiles.forEach(p => p.draw()); enemies.forEach(e => e.draw()); if (player) player.draw(); thunderbolts.forEach(tb => tb.draw()); bossLightning.forEach(bl => bl.draw()); damageTexts.forEach(d => d.draw());
+                // HTML overlays handle the menu display
             }
-
-            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            platforms.forEach(p => {
-                const brickWidth = 15; // Smaller bricks
-                const brickHeight = 7; // Smaller bricks
-                const platformColor1 = '#38761D'; const platformColor2 = '#2E6127'; const platformStrokeColor = '#1C4017';
-                for (let y_coord = p.y; y_coord < p.y + p.height; y_coord += brickHeight) {
-                    for (let x_coord = p.x; x_coord < p.x + p.width; x_coord += brickWidth) {
-                        ctx.strokeStyle = platformStrokeColor; ctx.strokeRect(x_coord, y_coord, Math.min(brickWidth, p.x + p.width - x_coord), Math.min(brickHeight, p.y + p.height - y_coord));
-                        ctx.fillStyle = ((Math.floor(x_coord / brickWidth) + Math.floor(y_coord / brickHeight)) % 2 === 0) ? platformColor1 : platformColor2;
-                        ctx.fillRect(x_coord, y_coord, Math.min(brickWidth, p.x + p.width - x_coord), Math.min(brickHeight, p.y + p.height - y_coord));
-                    }
-                }
-            });
-            grassBlades.forEach(blade => blade.draw(ctx));
-            particles.forEach(p => p.draw());
-            projectiles.forEach(p => p.draw());
-            enemies.forEach(e => e.draw());
-            if (player) player.draw();
-            thunderbolts.forEach(tb => tb.draw());
-            damageTexts.forEach(d => d.draw());
-
-            if (!levelUpScreenActive) { requestAnimationFrame(gameLoop); }
+            requestAnimationFrame(masterLoop);
         }
     </script>
 </body>
