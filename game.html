@@ -571,10 +571,10 @@
         let grassBlades = [];
         let keys = {};
         let score = 0;
-        let kills = 0;
-        // gameRunning, levelUpScreenActive, gameOver are now managed by currentGameState
+        let kills = 0;        // gameRunning, levelUpScreenActive, gameOver are now managed by currentGameState
         const GRAVITY = 0.35;
         const GROUND_FRICTION = 0.8;
+        const THUNDERBOLT_INTERVAL = 3500; // Interval in milliseconds for thunderbolt attacks
         let mouseIsDown = false;
         let lastPlayerX = 0;
         let currentWave = 1;
