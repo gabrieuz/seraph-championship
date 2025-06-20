@@ -585,6 +585,7 @@
         let timeBetweenWaves = 3000;
         let waveBreakTimer = 0;
         let platforms = [];
+        let isChampionMode = false;
 
         // --- UI ELEMENTS ---
         const starryBackground = document.getElementById('starry-background');
@@ -1245,6 +1246,7 @@
         function getUpgradeOptions() { const numChoices = player.appraisalChoices || 3; const chosenCards = []; const availableCards = [...upgradeCards]; const luck = player.luckFactor || 0; const levelBonus = player.level / 50; const rarityWeights = { common: 0.6 - luck - levelBonus, uncommon: 0.3 + luck * 0.5 + levelBonus * 0.5, epic: 0.08 + luck * 0.3 + levelBonus * 0.3, ascension: 0.02 + luck * 0.2 + levelBonus * 0.2 }; let totalWeight = 0; for (const r in rarityWeights) { if (rarityWeights[r] < 0) rarityWeights[r] = 0.01; totalWeight += rarityWeights[r]; } for (const r in rarityWeights) { rarityWeights[r] /= totalWeight; } for (let i = 0; i < numChoices; i++) { if (availableCards.length === 0) break; let randomRoll = Math.random(); let selectedRarity = "common"; let cumulativeWeight = 0; if (randomRoll < (cumulativeWeight += rarityWeights.ascension)) selectedRarity = "ascension"; else if (randomRoll < (cumulativeWeight += rarityWeights.epic)) selectedRarity = "epic"; else if (randomRoll < (cumulativeWeight += rarityWeights.uncommon)) selectedRarity = "uncommon"; else selectedRarity = "common"; let pool = availableCards.filter(card => card.rarity === selectedRarity); if (pool.length === 0) { pool = availableCards.filter(card => card.rarity === "common"); if (pool.length === 0) pool = availableCards; } if (pool.length === 0) break; const randomIndex = Math.floor(Math.random() * pool.length); const selectedCard = pool[randomIndex]; chosenCards.push(selectedCard); const indexInAvailable = availableCards.indexOf(selectedCard); if (indexInAvailable > -1) availableCards.splice(indexInAvailable, 1); } return chosenCards; }
         function displayUpgradeOptions() { const cardOptionsContainer = document.getElementById('card-options'); cardOptionsContainer.innerHTML = ''; const options = getUpgradeOptions(); if (options.length === 0) { cardOptionsContainer.innerHTML = "<p>No more upgrades available!</p><button onclick='selectUpgrade(null)'>Continue</button>"; } else { options.forEach(card => { const cardDiv = document.createElement('div'); cardDiv.className = `card card-${card.rarity || 'common'}`; cardDiv.innerHTML = `<h3>${card.name} (${card.rarity})</h3><p>${card.description}</p>`; cardDiv.onclick = () => selectUpgrade(card); cardOptionsContainer.appendChild(cardDiv); }); } levelUpScreen.style.display = 'flex'; }
         function selectUpgrade(card) { if (player && card) player.applyUpgrade(card); levelUpScreen.style.display = 'none'; currentGameState = GameStates.PLAYING; lastTime = 0;/* masterLoop already running */ } function initGame() {
+            isChampionMode = false;
             definePlatforms(); // Includes initGrass()
             player = new Player();
             enemies = [];
@@ -1280,6 +1282,7 @@
             uiContainer.style.display = 'none';
             starryBackground.style.display = 'none';
             waveInProgress = false; // Stop pending wave spawns            // Clear game entities for a fresh start if player goes back to main menu
+            isChampionMode = false;
             enemies = [];
             projectiles = [];
             particles = [];
@@ -1325,7 +1328,10 @@
             if (enemiesSpawnedThisWave < enemiesInWave && waveInProgress) {
                 let isChampion = false;
                 let championType = null;
-                if (currentWave % 3 === 0) {
+
+                if (isChampionMode) {
+                    isChampion = true;
+                } else if (currentWave % 3 === 0) {
                     if (enemiesSpawnedThisWave === Math.floor(enemiesInWave / 2)) {
                         isChampion = true;
                     }
@@ -1421,6 +1427,14 @@
             startMenuScreen.style.display = 'none';
             currentGameState = GameStates.PLAYING;
             initGame(); // This will also call updateUI to show game HUD
+
+            if (playerName.toUpperCase() === 'CHAMPION MODE') {
+                isChampionMode = true;
+                player.maxHp += 50;
+                player.hp = player.maxHp;
+                player.projectileDamage += 5;
+                updateUI();
+            }
 
             if (playerName.toUpperCase() === 'DLM') {
                 player.hp = 99999;
