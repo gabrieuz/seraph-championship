@@ -981,7 +981,7 @@
                     offsetY = random(-2, 2);
                 }
 
-                ctx.drawImage(bossSprite, this.x + offsetX, this.y + offsetY, this.width, this.height);
+                ctx.drawImage(bossSprite, this.x + offsetX, this.y + offsetY + 125, this.width, this.height);
 
                 // Barra de vida do boss (mais proeminente)
                 if (this.hp < this.maxHp) {
